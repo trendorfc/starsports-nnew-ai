@@ -1,0 +1,4 @@
+<resources>
+
+    <style name="Theme.StrykeSportsAi" parent="Theme.MaterialComponents.Light" />
+</resources>
