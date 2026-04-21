@@ -9,9 +9,11 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import coil.compose.AsyncImage
 import com.example.strykesportsai.data.local.entity.TurfEntity
 import com.example.strykesportsai.ui.player.PlayerViewModel
 import kotlinx.coroutines.flow.collectLatest
@@ -65,15 +67,69 @@ fun CreateMatchScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(padding)
-                .padding(20.dp)
                 .verticalScroll(rememberScrollState()),
             verticalArrangement = Arrangement.spacedBy(24.dp)
         ) {
-            Text(
-                text = "Organize a Match",
-                style = MaterialTheme.typography.headlineSmall,
-                fontWeight = FontWeight.Bold
-            )
+            // Turf/Sport Preview Image
+            val previewImageUrl = remember(selectedTurf, sport) {
+                if (selectedTurf != null) {
+                    val turfSports = selectedTurf!!.sportsSupported.split(",").map { it.trim().lowercase() }
+                    when {
+                        turfSports.contains("football") && turfSports.contains("cricket") -> "https://images.unsplash.com/photo-1574629810360-7efbbe195018"
+                        turfSports.contains("cricket") -> "https://images.unsplash.com/photo-1531415074968-036ba1b575da"
+                        turfSports.contains("football") -> "https://images.unsplash.com/photo-1574629810360-7efbbe195018"
+                        turfSports.contains("tennis") -> "https://images.unsplash.com/photo-1595435064212-36aa3664d603"
+                        turfSports.contains("badminton") -> "https://images.unsplash.com/photo-1626225967045-9410dd99eaa6"
+                        turfSports.contains("basketball") -> "https://images.unsplash.com/photo-1546519638-68e109498ffc"
+                        else -> selectedTurf!!.imageUrls.split(",").firstOrNull()?.trim()
+                    }
+                } else if (sport.isNotEmpty()) {
+                    when (sport.lowercase()) {
+                        "football" -> "https://images.unsplash.com/photo-1574629810360-7efbbe195018"
+                        "cricket" -> "https://images.unsplash.com/photo-1531415074968-036ba1b575da"
+                        "tennis" -> "https://images.unsplash.com/photo-1595435064212-36aa3664d603"
+                        "badminton" -> "https://images.unsplash.com/photo-1626225967045-9410dd99eaa6"
+                        "basketball" -> "https://images.unsplash.com/photo-1546519638-68e109498ffc"
+                        else -> null
+                    }
+                } else null
+            }
+
+            if (previewImageUrl != null) {
+                AsyncImage(
+                    model = previewImageUrl,
+                    contentDescription = "Turf Preview",
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(200.dp),
+                    contentScale = ContentScale.Crop
+                )
+            } else {
+                Surface(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(200.dp),
+                    color = MaterialTheme.colorScheme.surfaceVariant
+                ) {
+                    Box(contentAlignment = Alignment.Center) {
+                        Text(
+                            text = if (sport.isEmpty()) "Select a sport to see preview" else "Preview will appear here",
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                }
+            }
+
+            Column(
+                modifier = Modifier.padding(horizontal = 20.dp),
+                verticalArrangement = Arrangement.spacedBy(24.dp)
+            ) {
+                Text(
+                    text = "Organize a Match",
+                    style = MaterialTheme.typography.headlineSmall,
+                    fontWeight = FontWeight.Bold
+                )
 
             // Sport Selection
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -242,6 +298,7 @@ fun CreateMatchScreen(
                 shape = MaterialTheme.shapes.medium
             ) {
                 Text("Create Match", fontSize = 16.sp)
+            }
             }
         }
     }

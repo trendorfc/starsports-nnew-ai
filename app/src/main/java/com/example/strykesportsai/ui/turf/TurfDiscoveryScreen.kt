@@ -7,13 +7,20 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.ArrowBack
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.rounded.AddBox
+import androidx.compose.material.icons.rounded.Groups
+import androidx.compose.material.icons.rounded.Person
+import androidx.compose.material.icons.rounded.SportsFootball
+import androidx.compose.material.icons.rounded.SwapHoriz
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import coil.compose.AsyncImage
 import com.example.strykesportsai.data.local.entity.TurfEntity
 import com.example.strykesportsai.ui.player.PlayerViewModel
 
@@ -21,6 +28,10 @@ import com.example.strykesportsai.ui.player.PlayerViewModel
 @Composable
 fun TurfDiscoveryScreen(
     viewModel: PlayerViewModel,
+    onNavigateToPlayers: () -> Unit,
+    onNavigateToTurfs: () -> Unit,
+    onNavigateToCreateMatch: () -> Unit,
+    onNavigateToProfile: () -> Unit,
     onNavigateToDetail: (Long) -> Unit,
     onNavigateBack: () -> Unit
 ) {
@@ -35,8 +46,41 @@ fun TurfDiscoveryScreen(
                     IconButton(onClick = onNavigateBack) {
                         Icon(Icons.AutoMirrored.Rounded.ArrowBack, contentDescription = "Back")
                     }
+                },
+                actions = {
+                    IconButton(onClick = { viewModel.switchRole() }) {
+                        Icon(Icons.Rounded.SwapHoriz, contentDescription = "Switch Role")
+                    }
                 }
             )
+        },
+        bottomBar = {
+            NavigationBar {
+                NavigationBarItem(
+                    selected = false,
+                    onClick = onNavigateToPlayers,
+                    icon = { Icon(Icons.Rounded.Groups, contentDescription = null) },
+                    label = { Text("Players") }
+                )
+                NavigationBarItem(
+                    selected = true,
+                    onClick = onNavigateToTurfs,
+                    icon = { Icon(Icons.Rounded.SportsFootball, contentDescription = null) },
+                    label = { Text("Turfs") }
+                )
+                NavigationBarItem(
+                    selected = false,
+                    onClick = onNavigateToCreateMatch,
+                    icon = { Icon(Icons.Rounded.AddBox, contentDescription = null) },
+                    label = { Text("Match") }
+                )
+                NavigationBarItem(
+                    selected = false,
+                    onClick = onNavigateToProfile,
+                    icon = { Icon(Icons.Rounded.Person, contentDescription = null) },
+                    label = { Text("Profile") }
+                )
+            }
         }
     ) { padding ->
         Column(
@@ -117,15 +161,38 @@ fun TurfListItem(
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
     ) {
         Column {
-            // Placeholder for image
-            Surface(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(150.dp),
-                color = MaterialTheme.colorScheme.secondaryContainer
-            ) {
-                Box(contentAlignment = Alignment.Center) {
-                    Text("Turf Image", style = MaterialTheme.typography.labelLarge)
+            val imageUrl = remember(turf.sportsSupported) {
+                val sports = turf.sportsSupported.split(",").map { it.trim().lowercase() }
+                when {
+                    sports.contains("football") && sports.contains("cricket") -> "https://images.unsplash.com/photo-1574629810360-7efbbe195018"
+                    sports.contains("cricket") -> "https://images.unsplash.com/photo-1531415074968-036ba1b575da"
+                    sports.contains("football") -> "https://images.unsplash.com/photo-1574629810360-7efbbe195018"
+                    sports.contains("tennis") -> "https://images.unsplash.com/photo-1595435064212-36aa3664d603"
+                    sports.contains("badminton") -> "https://images.unsplash.com/photo-1626225967045-9410dd99eaa6"
+                    sports.contains("basketball") -> "https://images.unsplash.com/photo-1546519638-68e109498ffc"
+                    else -> turf.imageUrls.split(",").firstOrNull()?.trim()
+                }
+            }
+
+            if (!imageUrl.isNullOrBlank()) {
+                AsyncImage(
+                    model = imageUrl,
+                    contentDescription = "Turf Image",
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(150.dp),
+                    contentScale = ContentScale.Crop
+                )
+            } else {
+                Surface(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(150.dp),
+                    color = MaterialTheme.colorScheme.secondaryContainer
+                ) {
+                    Box(contentAlignment = Alignment.Center) {
+                        Text("No Image Available", style = MaterialTheme.typography.labelLarge)
+                    }
                 }
             }
             

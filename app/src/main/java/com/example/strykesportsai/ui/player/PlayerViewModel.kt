@@ -3,13 +3,20 @@ package com.example.strykesportsai.ui.player
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
+import com.example.strykesportsai.data.local.entity.BookingEntity
 import com.example.strykesportsai.data.local.entity.MatchEntity
 import com.example.strykesportsai.data.local.entity.TurfEntity
 import com.example.strykesportsai.data.local.entity.UserEntity
 import com.example.strykesportsai.data.local.entity.UserRole
 import com.example.strykesportsai.data.repository.StrykeRepository
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
+
+data class BookingWithTurf(
+    val booking: BookingEntity,
+    val turf: TurfEntity?
+)
 
 class PlayerViewModel(private val repository: StrykeRepository) : ViewModel() {
 
@@ -26,6 +33,29 @@ class PlayerViewModel(private val repository: StrykeRepository) : ViewModel() {
     val selectedSport: StateFlow<String?> = _selectedSport.asStateFlow()
 
     val turfs: StateFlow<List<TurfEntity>> = repository.getAllTurfs().stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.WhileSubscribed(5000),
+        initialValue = emptyList()
+    )
+
+    @OptIn(ExperimentalCoroutinesApi::class)
+    val userBookings: StateFlow<List<BookingEntity>> = user.flatMapLatest { currentUser ->
+        if (currentUser != null) {
+            repository.getBookingsByUser(currentUser.id)
+        } else {
+            flowOf(emptyList())
+        }
+    }.stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.WhileSubscribed(5000),
+        initialValue = emptyList()
+    )
+
+    val bookingsWithTurf: StateFlow<List<BookingWithTurf>> = combine(userBookings, turfs) { bookings, turfList ->
+        bookings.map { booking ->
+            BookingWithTurf(booking, turfList.find { it.id == booking.turfId })
+        }
+    }.stateIn(
         scope = viewModelScope,
         started = SharingStarted.WhileSubscribed(5000),
         initialValue = emptyList()
@@ -100,6 +130,14 @@ class PlayerViewModel(private val repository: StrykeRepository) : ViewModel() {
             repository.saveMatch(match)
             _selectedSport.value = null // Reset filter to show all matches
             _createMatchSuccess.emit(true)
+        }
+    }
+
+    fun updateProfile(name: String, photoUrl: String?) {
+        viewModelScope.launch {
+            user.value?.let { currentUser ->
+                repository.updateUser(currentUser.copy(name = name, profileImageUrl = photoUrl))
+            }
         }
     }
 }

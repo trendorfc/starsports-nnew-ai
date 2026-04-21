@@ -72,6 +72,14 @@ class OwnerViewModel(private val repository: StrykeRepository) : ViewModel() {
             repository.clearUser()
         }
     }
+
+    fun updateProfile(name: String, photoUrl: String?) {
+        viewModelScope.launch {
+            user.value?.let { currentUser ->
+                repository.updateUser(currentUser.copy(name = name, profileImageUrl = photoUrl))
+            }
+        }
+    }
 }
 
 class OwnerViewModelFactory(private val repository: StrykeRepository) : ViewModelProvider.Factory {

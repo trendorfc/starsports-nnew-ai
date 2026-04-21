@@ -15,15 +15,13 @@ class TurfViewModel(private val repository: StrykeRepository) : ViewModel() {
     private val _bookingSuccess = MutableSharedFlow<Boolean>()
     val bookingSuccess = _bookingSuccess.asSharedFlow()
 
-    fun bookSlot(userId: Long, turfId: Long, slot: String, price: Double) {
+    fun bookSlot(userId: Long, turfId: Long, startTime: Long, price: Double) {
         viewModelScope.launch {
-            // In a real app, parse slot to timestamp
-            val startTime = System.currentTimeMillis() 
             val booking = BookingEntity(
                 userId = userId,
                 turfId = turfId,
                 startTime = startTime,
-                endTime = startTime + 3600000,
+                endTime = startTime + 3600000, // 1 hour duration
                 status = BookingStatus.CONFIRMED,
                 totalPrice = price
             )

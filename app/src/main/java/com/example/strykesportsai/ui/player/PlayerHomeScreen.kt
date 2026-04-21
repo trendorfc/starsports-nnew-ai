@@ -7,10 +7,10 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.rounded.Person
 import androidx.compose.material.icons.rounded.Groups
 import androidx.compose.material.icons.rounded.SportsFootball
 import androidx.compose.material.icons.rounded.AddBox
-import androidx.compose.material.icons.rounded.AccountCircle
 import androidx.compose.material.icons.rounded.SwapHoriz
 import androidx.compose.material.icons.rounded.Logout
 import androidx.compose.material3.*
@@ -18,9 +18,11 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import coil.compose.AsyncImage
 import com.example.strykesportsai.data.local.entity.UserEntity
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
@@ -29,7 +31,8 @@ fun PlayerHomeScreen(
     viewModel: PlayerViewModel,
     onNavigateToPlayers: () -> Unit,
     onNavigateToTurfs: () -> Unit,
-    onNavigateToCreateMatch: () -> Unit
+    onNavigateToCreateMatch: () -> Unit,
+    onNavigateToProfile: () -> Unit
 ) {
     val user by viewModel.user.collectAsState()
     val selectedSport by viewModel.selectedSport.collectAsState()
@@ -52,34 +55,8 @@ fun PlayerHomeScreen(
                     }
                 },
                 actions = {
-                    var showProfileMenu by remember { mutableStateOf(false) }
-                    IconButton(onClick = { showProfileMenu = true }) {
-                        Icon(Icons.Rounded.AccountCircle, contentDescription = "Profile")
-                    }
-                    DropdownMenu(
-                        expanded = showProfileMenu,
-                        onDismissRequest = { showProfileMenu = false }
-                    ) {
-                        DropdownMenuItem(
-                            text = { Text("Switch to Owner Role") },
-                            onClick = {
-                                viewModel.switchRole()
-                                showProfileMenu = false
-                            },
-                            leadingIcon = { Icon(Icons.Rounded.SwapHoriz, contentDescription = null) }
-                        )
-                        DropdownMenuItem(
-                            text = { Text("Logout") },
-                            onClick = {
-                                viewModel.logout()
-                                showProfileMenu = false
-                            },
-                            leadingIcon = { Icon(Icons.Rounded.Logout, contentDescription = null) },
-                            colors = MenuDefaults.itemColors(
-                                textColor = MaterialTheme.colorScheme.error,
-                                leadingIconColor = MaterialTheme.colorScheme.error
-                            )
-                        )
+                    IconButton(onClick = { viewModel.switchRole() }) {
+                        Icon(Icons.Rounded.SwapHoriz, contentDescription = "Switch Role")
                     }
                 }
             )
@@ -103,6 +80,12 @@ fun PlayerHomeScreen(
                     onClick = onNavigateToCreateMatch,
                     icon = { Icon(Icons.Rounded.AddBox, contentDescription = null) },
                     label = { Text("Match") }
+                )
+                NavigationBarItem(
+                    selected = false,
+                    onClick = onNavigateToProfile,
+                    icon = { Icon(Icons.Rounded.Person, contentDescription = null) },
+                    label = { Text("Profile") }
                 )
             }
         }
@@ -225,33 +208,55 @@ fun MatchCard(
         shape = MaterialTheme.shapes.large,
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
     ) {
-        Row(
-            modifier = Modifier
-                .padding(16.dp)
-                .fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Column(modifier = Modifier.weight(1f)) {
-                Text(text = sport, fontWeight = FontWeight.Bold, style = MaterialTheme.typography.titleMedium)
-                Text(text = location, style = MaterialTheme.typography.bodySmall)
-                Text(text = time, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.primary)
-                if (isCreator) {
-                    Text(
-                        text = "You created this match",
-                        style = MaterialTheme.typography.labelSmall,
-                        color = MaterialTheme.colorScheme.secondary,
-                        modifier = Modifier.padding(top = 4.dp)
-                    )
+        Column {
+            val imageUrl = remember(sport) {
+                when (sport.lowercase().trim()) {
+                    "football" -> "https://images.unsplash.com/photo-1574629810360-7efbbe195018"
+                    "cricket" -> "https://images.unsplash.com/photo-1531415074968-036ba1b575da"
+                    "tennis" -> "https://images.unsplash.com/photo-1595435064212-36aa3664d603"
+                    "badminton" -> "https://images.unsplash.com/photo-1626225967045-9410dd99eaa6"
+                    "basketball" -> "https://images.unsplash.com/photo-1546519638-68e109498ffc"
+                    else -> "https://images.unsplash.com/photo-1574629810360-7efbbe195018"
                 }
             }
-            Column(horizontalAlignment = Alignment.End) {
-                Text(text = "$playersNeeded slots", fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.secondary)
-                Button(
-                    onClick = { },
-                    contentPadding = PaddingValues(horizontal = 12.dp, vertical = 4.dp),
-                    enabled = !isCreator
-                ) {
-                    Text(if (isCreator) "Joined" else "Join")
+
+            AsyncImage(
+                model = imageUrl,
+                contentDescription = "Match Sport Image",
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(120.dp),
+                contentScale = ContentScale.Crop
+            )
+
+            Row(
+                modifier = Modifier
+                    .padding(16.dp)
+                    .fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(text = sport, fontWeight = FontWeight.Bold, style = MaterialTheme.typography.titleMedium)
+                    Text(text = location, style = MaterialTheme.typography.bodySmall)
+                    Text(text = time, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.primary)
+                    if (isCreator) {
+                        Text(
+                            text = "You created this match",
+                            style = MaterialTheme.typography.labelSmall,
+                            color = MaterialTheme.colorScheme.secondary,
+                            modifier = Modifier.padding(top = 4.dp)
+                        )
+                    }
+                }
+                Column(horizontalAlignment = Alignment.End) {
+                    Text(text = "$playersNeeded slots", fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.secondary)
+                    Button(
+                        onClick = { },
+                        contentPadding = PaddingValues(horizontal = 12.dp, vertical = 4.dp),
+                        enabled = !isCreator
+                    ) {
+                        Text(if (isCreator) "Joined" else "Join")
+                    }
                 }
             }
         }

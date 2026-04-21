@@ -112,7 +112,8 @@ fun StrykeNavGraph(
                 viewModel = playerViewModel,
                 onNavigateToPlayers = { navController.navigate(Screen.PlayerDiscovery.route) },
                 onNavigateToTurfs = { navController.navigate(Screen.TurfDiscovery.route) },
-                onNavigateToCreateMatch = { navController.navigate(Screen.CreateMatch.route) }
+                onNavigateToCreateMatch = { navController.navigate(Screen.CreateMatch.route) },
+                onNavigateToProfile = { navController.navigate(Screen.Profile.route) }
             )
         }
         composable(Screen.PlayerDiscovery.route) {
@@ -124,6 +125,10 @@ fun StrykeNavGraph(
         composable(Screen.TurfDiscovery.route) {
             TurfDiscoveryScreen(
                 viewModel = playerViewModel,
+                onNavigateToPlayers = { navController.navigate(Screen.PlayerHome.route) },
+                onNavigateToTurfs = { /* Already here */ },
+                onNavigateToCreateMatch = { navController.navigate(Screen.CreateMatch.route) },
+                onNavigateToProfile = { navController.navigate(Screen.Profile.route) },
                 onNavigateToDetail = { turfId ->
                     navController.navigate(Screen.TurfDetail.createRoute(turfId))
                 },
@@ -144,6 +149,22 @@ fun StrykeNavGraph(
         }
         composable(Screen.CreateMatch.route) {
             CreateMatchScreen(
+                viewModel = playerViewModel,
+                onNavigateBack = { navController.popBackStack() }
+            )
+        }
+        composable(Screen.Profile.route) {
+            ProfileScreen(
+                viewModel = playerViewModel,
+                onNavigateToPlayers = { navController.navigate(Screen.PlayerHome.route) },
+                onNavigateToTurfs = { navController.navigate(Screen.TurfDiscovery.route) },
+                onNavigateToCreateMatch = { navController.navigate(Screen.CreateMatch.route) },
+                onNavigateToProfile = { /* Already here */ },
+                onNavigateToPastBookings = { navController.navigate(Screen.PastBookings.route) }
+            )
+        }
+        composable(Screen.PastBookings.route) {
+            PastBookingsScreen(
                 viewModel = playerViewModel,
                 onNavigateBack = { navController.popBackStack() }
             )
@@ -197,6 +218,14 @@ fun StrykeNavGraph(
             TurfOwnerHomeScreen(viewModel = ownerViewModel, navController = navController) { padding ->
                 ViewBookingsScreen(
                     turfId = turfId,
+                    viewModel = ownerViewModel,
+                    onNavigateBack = { navController.popBackStack() }
+                )
+            }
+        }
+        composable(Screen.OwnerProfile.route) {
+            TurfOwnerHomeScreen(viewModel = ownerViewModel, navController = navController) { padding ->
+                OwnerProfileScreen(
                     viewModel = ownerViewModel,
                     onNavigateBack = { navController.popBackStack() }
                 )
