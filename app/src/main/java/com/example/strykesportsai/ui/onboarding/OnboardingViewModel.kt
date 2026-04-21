@@ -13,8 +13,11 @@ import kotlinx.coroutines.launch
 
 class OnboardingViewModel(private val repository: StrykeRepository) : ViewModel() {
 
-    private val _name = MutableStateFlow("")
-    val name: StateFlow<String> = _name.asStateFlow()
+    private val _firstName = MutableStateFlow("")
+    val firstName: StateFlow<String> = _firstName.asStateFlow()
+
+    private val _lastName = MutableStateFlow("")
+    val lastName: StateFlow<String> = _lastName.asStateFlow()
 
     private val _dob = MutableStateFlow("")
     val dob: StateFlow<String> = _dob.asStateFlow()
@@ -28,15 +31,27 @@ class OnboardingViewModel(private val repository: StrykeRepository) : ViewModel(
     private val _onboardingCompleted = MutableStateFlow(false)
     val onboardingCompleted: StateFlow<Boolean> = _onboardingCompleted.asStateFlow()
 
-    fun onNameChange(newName: String) { _name.value = newName }
+    fun onFirstNameChange(newName: String) { _firstName.value = newName }
+    fun onLastNameChange(newName: String) { _lastName.value = newName }
     fun onDobChange(newDob: String) { _dob.value = newDob }
     fun onSportsInterestsChange(newInterests: String) { _sportsInterests.value = newInterests }
+    
+    fun toggleSportInterest(sport: String) {
+        val current = _sportsInterests.value.split(", ").filter { it.isNotBlank() }.toMutableList()
+        if (current.contains(sport)) {
+            current.remove(sport)
+        } else {
+            current.add(sport)
+        }
+        _sportsInterests.value = current.joinToString(", ")
+    }
+
     fun onRoleSelected(role: UserRole) { _selectedRole.value = role }
 
     fun completeOnboarding() {
         viewModelScope.launch {
             val user = UserEntity(
-                name = _name.value,
+                name = "${_firstName.value} ${_lastName.value}".trim(),
                 dob = _dob.value,
                 sportsInterests = _sportsInterests.value,
                 role = _selectedRole.value

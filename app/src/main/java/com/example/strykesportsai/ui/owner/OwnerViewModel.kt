@@ -66,6 +66,12 @@ class OwnerViewModel(private val repository: StrykeRepository) : ViewModel() {
             }
         }
     }
+
+    fun logout() {
+        viewModelScope.launch {
+            repository.clearUser()
+        }
+    }
 }
 
 class OwnerViewModelFactory(private val repository: StrykeRepository) : ViewModelProvider.Factory {

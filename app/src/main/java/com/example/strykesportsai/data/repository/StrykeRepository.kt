@@ -20,6 +20,7 @@ class StrykeRepository(
     fun getUser(): Flow<UserEntity?> = userDao.getUser()
     suspend fun saveUser(user: UserEntity): Long = userDao.insertUser(user)
     suspend fun updateUser(user: UserEntity) = userDao.updateUser(user)
+    suspend fun clearUser() = userDao.clearUser()
 
     // Turfs
     fun getAllTurfs(): Flow<List<TurfEntity>> = turfDao.getAllTurfs()

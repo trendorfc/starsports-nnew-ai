@@ -2,18 +2,22 @@ package com.example.strykesportsai.ui.theme
 
 import androidx.compose.ui.graphics.Color
 
-// Vibrant Sports Theme (Expressive Green and Deep Blue)
-val PrimaryGreen = Color(0xFF00E676)
-val PrimaryBlue = Color(0xFF2979FF)
-val BackgroundDark = Color(0xFF0A0A0A)
-val SurfaceDark = Color(0xFF161616)
+// Stryke Sports Theme (Red and Dark Grey/Silver)
+val StrykeRed = Color(0xFFE31E24)
+val StrykeGrey = Color(0xFF414042)
+val StrykeSilver = Color(0xFFBCBEC0)
+val StrykeBlack = Color(0xFF000000)
 
-val LightPrimary = Color(0xFF00C853)
-val LightOnPrimary = Color(0xFFFFFFFF)
-val LightSecondary = Color(0xFF1E88E5)
-val LightOnSecondary = Color(0xFFFFFFFF)
+val LightPrimary = StrykeRed
+val LightOnPrimary = Color.White
+val LightSecondary = StrykeGrey
+val LightOnSecondary = Color.White
+val LightBackground = Color(0xFFFDFDFD)
+val LightSurface = Color.White
 
-val DarkPrimary = Color(0xFF69F0AE)
-val DarkOnPrimary = Color(0xFF003314)
-val DarkSecondary = Color(0xFF82B1FF)
-val DarkOnSecondary = Color(0xFF001933)
+val DarkPrimary = StrykeRed
+val DarkOnPrimary = Color.White
+val DarkSecondary = StrykeSilver
+val DarkOnSecondary = StrykeBlack
+val DarkBackground = Color(0xFF121212)
+val DarkSurface = Color(0xFF1E1E1E)

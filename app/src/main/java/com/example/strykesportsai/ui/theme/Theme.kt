@@ -21,12 +21,12 @@ private val DarkColorScheme = darkColorScheme(
     onPrimary = DarkOnPrimary,
     secondary = DarkSecondary,
     onSecondary = DarkOnSecondary,
-    background = BackgroundDark,
-    surface = SurfaceDark,
-    primaryContainer = Color(0xFF004D40),
-    onPrimaryContainer = Color(0xFF64FFDA),
-    secondaryContainer = Color(0xFF0D47A1),
-    onSecondaryContainer = Color(0xFF82B1FF)
+    background = DarkBackground,
+    surface = DarkSurface,
+    primaryContainer = Color(0xFF8B0000),
+    onPrimaryContainer = Color.White,
+    secondaryContainer = Color(0xFF333333),
+    onSecondaryContainer = StrykeSilver
 )
 
 private val LightColorScheme = lightColorScheme(
@@ -34,16 +34,18 @@ private val LightColorScheme = lightColorScheme(
     onPrimary = LightOnPrimary,
     secondary = LightSecondary,
     onSecondary = LightOnSecondary,
-    primaryContainer = Color(0xFFB2DFDB),
-    onPrimaryContainer = Color(0xFF004D40),
-    secondaryContainer = Color(0xFFBBDEFB),
-    onSecondaryContainer = Color(0xFF0D47A1)
+    background = LightBackground,
+    surface = LightSurface,
+    primaryContainer = Color(0xFFFFDAD4),
+    onPrimaryContainer = Color(0xFF410001),
+    secondaryContainer = Color(0xFFE2E2E6),
+    onSecondaryContainer = StrykeGrey
 )
 
 @Composable
 fun StrykeSportsAITheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
-    dynamicColor: Boolean = true,
+    dynamicColor: Boolean = false,
     content: @Composable () -> Unit
 ) {
     val colorScheme = when {

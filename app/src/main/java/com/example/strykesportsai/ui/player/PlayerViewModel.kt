@@ -22,11 +22,21 @@ class PlayerViewModel(private val repository: StrykeRepository) : ViewModel() {
     private val _searchQuery = MutableStateFlow("")
     val searchQuery: StateFlow<String> = _searchQuery.asStateFlow()
 
+    private val _selectedSport = MutableStateFlow<String?>(null)
+    val selectedSport: StateFlow<String?> = _selectedSport.asStateFlow()
+
     val turfs: StateFlow<List<TurfEntity>> = repository.getAllTurfs().stateIn(
         scope = viewModelScope,
         started = SharingStarted.WhileSubscribed(5000),
         initialValue = emptyList()
     )
+
+    val filteredTurfs = combine(turfs, selectedSport) { list, sport ->
+        if (sport == null) list
+        else list.filter { 
+            it.sportsSupported.contains(sport, ignoreCase = true)
+        }
+    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
     val matches: StateFlow<List<MatchEntity>> = repository.getAllMatches().stateIn(
         scope = viewModelScope,
@@ -34,9 +44,13 @@ class PlayerViewModel(private val repository: StrykeRepository) : ViewModel() {
         initialValue = emptyList()
     )
 
-    val filteredTurfs = combine(turfs, searchQuery) { list, query ->
-        if (query.isBlank()) list
-        else list.filter { it.name.contains(query, ignoreCase = true) || it.location.contains(query, ignoreCase = true) }
+    fun onSportSelected(sport: String?) {
+        _selectedSport.value = sport
+    }
+
+    val filteredMatches = combine(matches, selectedSport) { list, sport ->
+        if (sport == null) list
+        else list.filter { it.sport.equals(sport, ignoreCase = true) }
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
     // Mock players for discovery (In a real app, this would come from a server or Room)
@@ -60,6 +74,12 @@ class PlayerViewModel(private val repository: StrykeRepository) : ViewModel() {
         }
     }
 
+    fun logout() {
+        viewModelScope.launch {
+            repository.clearUser()
+        }
+    }
+
     private val _createMatchSuccess = MutableSharedFlow<Boolean>()
     val createMatchSuccess = _createMatchSuccess.asSharedFlow()
 
@@ -78,6 +98,7 @@ class PlayerViewModel(private val repository: StrykeRepository) : ViewModel() {
                 description = description
             )
             repository.saveMatch(match)
+            _selectedSport.value = null // Reset filter to show all matches
             _createMatchSuccess.emit(true)
         }
     }

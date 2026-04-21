@@ -4,6 +4,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.AccountCircle
 import androidx.compose.material.icons.rounded.SwapHoriz
+import androidx.compose.material.icons.rounded.Logout
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -80,6 +81,18 @@ fun OwnerDashboard(
                                 showProfileMenu = false
                             },
                             leadingIcon = { Icon(Icons.Rounded.SwapHoriz, contentDescription = null) }
+                        )
+                        DropdownMenuItem(
+                            text = { Text("Logout") },
+                            onClick = {
+                                viewModel.logout()
+                                showProfileMenu = false
+                            },
+                            leadingIcon = { Icon(Icons.Rounded.Logout, contentDescription = null) },
+                            colors = MenuDefaults.itemColors(
+                                textColor = MaterialTheme.colorScheme.error,
+                                leadingIconColor = MaterialTheme.colorScheme.error
+                            )
                         )
                     }
                 }

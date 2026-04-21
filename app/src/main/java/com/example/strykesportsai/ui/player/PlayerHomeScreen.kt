@@ -5,12 +5,14 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.rounded.Groups
 import androidx.compose.material.icons.rounded.SportsFootball
 import androidx.compose.material.icons.rounded.AddBox
 import androidx.compose.material.icons.rounded.AccountCircle
 import androidx.compose.material.icons.rounded.SwapHoriz
+import androidx.compose.material.icons.rounded.Logout
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -21,7 +23,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.strykesportsai.data.local.entity.UserEntity
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
 @Composable
 fun PlayerHomeScreen(
     viewModel: PlayerViewModel,
@@ -30,7 +32,7 @@ fun PlayerHomeScreen(
     onNavigateToCreateMatch: () -> Unit
 ) {
     val user by viewModel.user.collectAsState()
-    val searchQuery by viewModel.searchQuery.collectAsState()
+    val selectedSport by viewModel.selectedSport.collectAsState()
 
     Scaffold(
         topBar = {
@@ -66,9 +68,43 @@ fun PlayerHomeScreen(
                             },
                             leadingIcon = { Icon(Icons.Rounded.SwapHoriz, contentDescription = null) }
                         )
+                        DropdownMenuItem(
+                            text = { Text("Logout") },
+                            onClick = {
+                                viewModel.logout()
+                                showProfileMenu = false
+                            },
+                            leadingIcon = { Icon(Icons.Rounded.Logout, contentDescription = null) },
+                            colors = MenuDefaults.itemColors(
+                                textColor = MaterialTheme.colorScheme.error,
+                                leadingIconColor = MaterialTheme.colorScheme.error
+                            )
+                        )
                     }
                 }
             )
+        },
+        bottomBar = {
+            NavigationBar {
+                NavigationBarItem(
+                    selected = true, // Simplified for now
+                    onClick = onNavigateToPlayers,
+                    icon = { Icon(Icons.Rounded.Groups, contentDescription = null) },
+                    label = { Text("Players") }
+                )
+                NavigationBarItem(
+                    selected = false,
+                    onClick = onNavigateToTurfs,
+                    icon = { Icon(Icons.Rounded.SportsFootball, contentDescription = null) },
+                    label = { Text("Turfs") }
+                )
+                NavigationBarItem(
+                    selected = false,
+                    onClick = onNavigateToCreateMatch,
+                    icon = { Icon(Icons.Rounded.AddBox, contentDescription = null) },
+                    label = { Text("Match") }
+                )
+            }
         }
     ) { padding ->
         Column(
@@ -76,55 +112,35 @@ fun PlayerHomeScreen(
                 .fillMaxSize()
                 .padding(padding)
                 .padding(horizontal = 20.dp),
-            verticalArrangement = Arrangement.spacedBy(20.dp)
+            verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            // Search Bar
-            OutlinedTextField(
-                value = searchQuery,
-                onValueChange = { viewModel.onSearchQueryChange(it) },
-                modifier = Modifier.fillMaxWidth(),
-                placeholder = { Text("Search players, turfs...") },
-                leadingIcon = { Icon(Icons.Default.Search, contentDescription = null) },
-                shape = MaterialTheme.shapes.large,
-                colors = OutlinedTextFieldDefaults.colors(
-                    focusedBorderColor = MaterialTheme.colorScheme.primary,
-                    unfocusedBorderColor = MaterialTheme.colorScheme.outlineVariant
-                )
-            )
+            val availableSports = listOf("Football", "Cricket", "Tennis", "Badminton", "Basketball")
 
-            Text(
-                text = "Quick Actions",
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.SemiBold
-            )
-
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(12.dp)
-            ) {
-                ActionCard(
-                    title = "Find Players",
-                    icon = Icons.Rounded.Groups,
-                    onClick = onNavigateToPlayers,
-                    modifier = Modifier.weight(1f),
-                    containerColor = MaterialTheme.colorScheme.primaryContainer
+            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                Text(
+                    text = "Filter by Sport",
+                    style = MaterialTheme.typography.labelLarge,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
-                ActionCard(
-                    title = "Find Turfs",
-                    icon = Icons.Rounded.SportsFootball,
-                    onClick = onNavigateToTurfs,
-                    modifier = Modifier.weight(1f),
-                    containerColor = MaterialTheme.colorScheme.secondaryContainer
-                )
+                FlowRow(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    availableSports.forEach { sport ->
+                        FilterChip(
+                            selected = selectedSport == sport,
+                            onClick = {
+                                if (selectedSport == sport) viewModel.onSportSelected(null)
+                                else viewModel.onSportSelected(sport)
+                            },
+                            label = { Text(sport) },
+                            leadingIcon = if (selectedSport == sport) {
+                                { Icon(Icons.Default.Check, contentDescription = null, modifier = Modifier.size(18.dp)) }
+                            } else null
+                        )
+                    }
+                }
             }
-
-            ActionCard(
-                title = "Create Match",
-                icon = Icons.Rounded.AddBox,
-                onClick = onNavigateToCreateMatch,
-                modifier = Modifier.fillMaxWidth(),
-                containerColor = MaterialTheme.colorScheme.tertiaryContainer
-            )
 
             Text(
                 text = "Nearby Matches",
@@ -132,7 +148,7 @@ fun PlayerHomeScreen(
                 fontWeight = FontWeight.SemiBold
             )
 
-            val matches by viewModel.matches.collectAsState()
+            val matches by viewModel.filteredMatches.collectAsState()
 
             LazyColumn(
                 verticalArrangement = Arrangement.spacedBy(12.dp),
@@ -143,17 +159,24 @@ fun PlayerHomeScreen(
                         sport = match.sport,
                         location = match.location,
                         time = "Today, 7 PM", // Format timestamp in real app
-                        playersNeeded = match.playersNeeded
+                        playersNeeded = match.playersNeeded,
+                        isCreator = match.creatorId == user?.id
                     )
                 }
                 if (matches.isEmpty()) {
-                    items(3) { index ->
-                        MatchCard(
-                            sport = if (index % 2 == 0) "Football" else "Cricket",
-                            location = "Wembley Arena",
-                            time = "Tomorrow, 6 PM",
-                            playersNeeded = 4
-                        )
+                    item {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(vertical = 64.dp),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(
+                                text = "No matches found${if (selectedSport != null) " for $selectedSport" else ""}.\nBe the first to create one!",
+                                textAlign = androidx.compose.ui.text.style.TextAlign.Center,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
                     }
                 }
             }
@@ -194,7 +217,8 @@ fun MatchCard(
     sport: String,
     location: String,
     time: String,
-    playersNeeded: Int
+    playersNeeded: Int,
+    isCreator: Boolean
 ) {
     Card(
         modifier = Modifier.fillMaxWidth(),
@@ -211,11 +235,23 @@ fun MatchCard(
                 Text(text = sport, fontWeight = FontWeight.Bold, style = MaterialTheme.typography.titleMedium)
                 Text(text = location, style = MaterialTheme.typography.bodySmall)
                 Text(text = time, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.primary)
+                if (isCreator) {
+                    Text(
+                        text = "You created this match",
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.secondary,
+                        modifier = Modifier.padding(top = 4.dp)
+                    )
+                }
             }
             Column(horizontalAlignment = Alignment.End) {
                 Text(text = "$playersNeeded slots", fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.secondary)
-                Button(onClick = { }, contentPadding = PaddingValues(horizontal = 12.dp, vertical = 4.dp)) {
-                    Text("Join")
+                Button(
+                    onClick = { },
+                    contentPadding = PaddingValues(horizontal = 12.dp, vertical = 4.dp),
+                    enabled = !isCreator
+                ) {
+                    Text(if (isCreator) "Joined" else "Join")
                 }
             }
         }

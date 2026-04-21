@@ -41,31 +41,43 @@ fun StrykeNavGraph(
     val userByPlayer by playerViewModel.user.collectAsState()
     val userByOwner by ownerViewModel.user.collectAsState()
 
-    LaunchedEffect(userByPlayer?.role) {
-        userByPlayer?.role?.let { role ->
-            val currentRoute = navController.currentBackStackEntry?.destination?.route
-            if (role == UserRole.PLAYER && currentRoute?.startsWith("turf_owner") == true) {
-                navController.navigate(Screen.PlayerHome.route) {
-                    popUpTo(0) { inclusive = true }
-                }
-            } else if (role == UserRole.TURF_OWNER && (currentRoute == Screen.PlayerHome.route || currentRoute == Screen.Onboarding.route)) {
-                navController.navigate(Screen.TurfOwnerHome.route) {
-                    popUpTo(0) { inclusive = true }
+    LaunchedEffect(userByPlayer) {
+        if (userByPlayer == null) {
+            navController.navigate(Screen.Onboarding.route) {
+                popUpTo(0) { inclusive = true }
+            }
+        } else {
+            userByPlayer?.role?.let { role ->
+                val currentRoute = navController.currentBackStackEntry?.destination?.route
+                if (role == UserRole.PLAYER && currentRoute?.startsWith("turf_owner") == true) {
+                    navController.navigate(Screen.PlayerHome.route) {
+                        popUpTo(0) { inclusive = true }
+                    }
+                } else if (role == UserRole.TURF_OWNER && (currentRoute == Screen.PlayerHome.route || currentRoute == Screen.Onboarding.route)) {
+                    navController.navigate(Screen.TurfOwnerHome.route) {
+                        popUpTo(0) { inclusive = true }
+                    }
                 }
             }
         }
     }
 
-    LaunchedEffect(userByOwner?.role) {
-        userByOwner?.role?.let { role ->
-            val currentRoute = navController.currentBackStackEntry?.destination?.route
-            if (role == UserRole.PLAYER && currentRoute?.startsWith("turf_owner") == true) {
-                navController.navigate(Screen.PlayerHome.route) {
-                    popUpTo(0) { inclusive = true }
-                }
-            } else if (role == UserRole.TURF_OWNER && (currentRoute == Screen.PlayerHome.route || currentRoute == Screen.Onboarding.route)) {
-                navController.navigate(Screen.TurfOwnerHome.route) {
-                    popUpTo(0) { inclusive = true }
+    LaunchedEffect(userByOwner) {
+        if (userByOwner == null) {
+            navController.navigate(Screen.Onboarding.route) {
+                popUpTo(0) { inclusive = true }
+            }
+        } else {
+            userByOwner?.role?.let { role ->
+                val currentRoute = navController.currentBackStackEntry?.destination?.route
+                if (role == UserRole.PLAYER && currentRoute?.startsWith("turf_owner") == true) {
+                    navController.navigate(Screen.PlayerHome.route) {
+                        popUpTo(0) { inclusive = true }
+                    }
+                } else if (role == UserRole.TURF_OWNER && (currentRoute == Screen.PlayerHome.route || currentRoute == Screen.Onboarding.route)) {
+                    navController.navigate(Screen.TurfOwnerHome.route) {
+                        popUpTo(0) { inclusive = true }
+                    }
                 }
             }
         }

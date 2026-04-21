@@ -1,27 +1,36 @@
 package com.example.strykesportsai.ui.onboarding
 
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.CalendarToday
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.strykesportsai.R
 import com.example.strykesportsai.data.local.entity.UserRole
+import java.text.SimpleDateFormat
+import java.util.*
 
 import androidx.compose.ui.tooling.preview.Preview
 import com.example.strykesportsai.ui.theme.StrykeSportsAITheme
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
 @Composable
 fun OnboardingScreen(
     viewModel: OnboardingViewModel?,
     onOnboardingComplete: (UserRole) -> Unit
 ) {
-    val name = viewModel?.name?.collectAsState()?.value ?: ""
+    val firstName = viewModel?.firstName?.collectAsState()?.value ?: ""
+    val lastName = viewModel?.lastName?.collectAsState()?.value ?: ""
     val dob = viewModel?.dob?.collectAsState()?.value ?: ""
     val sportsInterests = viewModel?.sportsInterests?.collectAsState()?.value ?: ""
     val selectedRole = viewModel?.selectedRole?.collectAsState()?.value ?: UserRole.UNDEFINED
@@ -49,6 +58,14 @@ fun OnboardingScreen(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
+            Image(
+                painter = painterResource(id = R.drawable.stryke_logo),
+                contentDescription = "Stryke Sports Logo",
+                modifier = Modifier
+                    .size(140.dp)
+                    .padding(bottom = 8.dp)
+            )
+
             Text(
                 text = "Welcome! Let's get started.",
                 fontSize = 24.sp,
@@ -56,28 +73,139 @@ fun OnboardingScreen(
                 modifier = Modifier.align(Alignment.Start)
             )
 
-            OutlinedTextField(
-                value = name,
-                onValueChange = { viewModel?.onNameChange(it) },
-                label = { Text("Full Name") },
+            Row(
                 modifier = Modifier.fillMaxWidth(),
-                singleLine = true
+                horizontalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                OutlinedTextField(
+                    value = firstName,
+                    onValueChange = { viewModel?.onFirstNameChange(it) },
+                    label = { Text("First Name") },
+                    modifier = Modifier.weight(1f),
+                    singleLine = true
+                )
+                OutlinedTextField(
+                    value = lastName,
+                    onValueChange = { viewModel?.onLastNameChange(it) },
+                    label = { Text("Last Name") },
+                    modifier = Modifier.weight(1f),
+                    singleLine = true
+                )
+            }
+
+            var showDatePicker by remember { mutableStateOf(false) }
+            val datePickerState = rememberDatePickerState(
+                initialSelectedDateMillis = if (dob.isNotEmpty()) {
+                    try {
+                        SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).parse(dob)?.time
+                    } catch (e: Exception) { null }
+                } else null
             )
+
+            if (showDatePicker) {
+                DatePickerDialog(
+                    onDismissRequest = { showDatePicker = false },
+                    confirmButton = {
+                        TextButton(onClick = {
+                            datePickerState.selectedDateMillis?.let {
+                                val formattedDate = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).format(Date(it))
+                                viewModel?.onDobChange(formattedDate)
+                            }
+                            showDatePicker = false
+                        }) {
+                            Text("OK")
+                        }
+                    },
+                    dismissButton = {
+                        TextButton(onClick = { showDatePicker = false }) {
+                            Text("Cancel")
+                        }
+                    }
+                ) {
+                    DatePicker(state = datePickerState)
+                }
+            }
 
             OutlinedTextField(
                 value = dob,
-                onValueChange = { viewModel?.onDobChange(it) },
-                label = { Text("Date of Birth (DD/MM/YYYY)") },
-                modifier = Modifier.fillMaxWidth(),
-                singleLine = true
+                onValueChange = { },
+                label = { Text("Date of Birth") },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clickable { showDatePicker = true },
+                enabled = false,
+                readOnly = true,
+                trailingIcon = {
+                    IconButton(onClick = { showDatePicker = true }) {
+                        Icon(Icons.Rounded.CalendarToday, contentDescription = "Select Date")
+                    }
+                },
+                colors = OutlinedTextFieldDefaults.colors(
+                    disabledTextColor = MaterialTheme.colorScheme.onSurface,
+                    disabledBorderColor = MaterialTheme.colorScheme.outline,
+                    disabledLabelColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                    disabledTrailingIconColor = MaterialTheme.colorScheme.onSurfaceVariant
+                )
             )
 
-            OutlinedTextField(
-                value = sportsInterests,
-                onValueChange = { viewModel?.onSportsInterestsChange(it) },
-                label = { Text("Favorite Sports (e.g., Football, Cricket)") },
-                modifier = Modifier.fillMaxWidth()
+            if (dob.isNotEmpty()) {
+                val age = remember(dob) {
+                    try {
+                        val birthDate = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).parse(dob)
+                        if (birthDate != null) {
+                            val birthCalendar = Calendar.getInstance().apply { time = birthDate }
+                            val today = Calendar.getInstance()
+                            var years = today.get(Calendar.YEAR) - birthCalendar.get(Calendar.YEAR)
+                            if (today.get(Calendar.DAY_OF_YEAR) < birthCalendar.get(Calendar.DAY_OF_YEAR)) {
+                                years--
+                            }
+                            years
+                        } else null
+                    } catch (e: Exception) { null }
+                }
+                
+                age?.let {
+                    Text(
+                        text = "You are $it years old",
+                        color = MaterialTheme.colorScheme.primary,
+                        style = MaterialTheme.typography.bodySmall,
+                        modifier = Modifier.align(Alignment.Start).padding(start = 4.dp, top = 2.dp)
+                    )
+                }
+            }
+
+            Text(
+                text = "Sports You Play",
+                fontSize = 18.sp,
+                fontWeight = FontWeight.Medium,
+                modifier = Modifier.align(Alignment.Start)
             )
+
+            val availableSports = listOf(
+                "Football", "Badminton", "Cricket", "Lawn Tennis", 
+                "Table Tennis", "Running", "Marathon", "Basketball", 
+                "Volleyball", "Swimming", "Yoga", "Cycling"
+            )
+
+            FlowRow(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                verticalArrangement = Arrangement.spacedBy(4.dp)
+            ) {
+                availableSports.forEach { sport ->
+                    val isSelected = sportsInterests.split(", ").contains(sport)
+                    FilterChip(
+                        selected = isSelected,
+                        onClick = { viewModel?.toggleSportInterest(sport) },
+                        label = { Text(sport) },
+                        shape = MaterialTheme.shapes.extraLarge,
+                        colors = FilterChipDefaults.filterChipColors(
+                            selectedContainerColor = MaterialTheme.colorScheme.primary,
+                            selectedLabelColor = MaterialTheme.colorScheme.onPrimary,
+                        )
+                    )
+                }
+            }
 
             Spacer(modifier = Modifier.height(8.dp))
 
@@ -113,7 +241,7 @@ fun OnboardingScreen(
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(56.dp),
-                enabled = name.isNotBlank() && dob.isNotBlank() && selectedRole != UserRole.UNDEFINED,
+                enabled = firstName.isNotBlank() && lastName.isNotBlank() && dob.isNotBlank() && sportsInterests.isNotBlank() && selectedRole != UserRole.UNDEFINED,
                 shape = MaterialTheme.shapes.medium
             ) {
                 Text("Complete Onboarding", fontSize = 16.sp)
