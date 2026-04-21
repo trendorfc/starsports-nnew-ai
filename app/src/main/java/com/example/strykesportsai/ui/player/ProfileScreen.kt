@@ -21,12 +21,15 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
+import com.example.strykesportsai.ui.navigation.PlayerBottomBar
+import com.example.strykesportsai.ui.navigation.Screen
 import coil.compose.AsyncImage
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ProfileScreen(
     viewModel: PlayerViewModel,
+    onNavigateToHome: () -> Unit,
     onNavigateToPlayers: () -> Unit,
     onNavigateToTurfs: () -> Unit,
     onNavigateToCreateMatch: () -> Unit,
@@ -61,32 +64,14 @@ fun ProfileScreen(
             )
         },
         bottomBar = {
-            NavigationBar {
-                NavigationBarItem(
-                    selected = false,
-                    onClick = onNavigateToPlayers,
-                    icon = { Icon(Icons.Rounded.Groups, contentDescription = null) },
-                    label = { Text("Players") }
-                )
-                NavigationBarItem(
-                    selected = false,
-                    onClick = onNavigateToTurfs,
-                    icon = { Icon(Icons.Rounded.SportsFootball, contentDescription = null) },
-                    label = { Text("Turfs") }
-                )
-                NavigationBarItem(
-                    selected = false,
-                    onClick = onNavigateToCreateMatch,
-                    icon = { Icon(Icons.Rounded.AddBox, contentDescription = null) },
-                    label = { Text("Match") }
-                )
-                NavigationBarItem(
-                    selected = true,
-                    onClick = onNavigateToProfile,
-                    icon = { Icon(Icons.Rounded.Person, contentDescription = null) },
-                    label = { Text("Profile") }
-                )
-            }
+            PlayerBottomBar(
+                selectedScreen = Screen.Profile,
+                onNavigateToHome = onNavigateToHome,
+                onNavigateToPlayers = onNavigateToPlayers,
+                onNavigateToTurfs = onNavigateToTurfs,
+                onNavigateToCreateMatch = onNavigateToCreateMatch,
+                onNavigateToProfile = onNavigateToProfile
+            )
         }
     ) { padding ->
         Column(

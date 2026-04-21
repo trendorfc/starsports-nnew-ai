@@ -1,22 +1,20 @@
 package com.example.strykesportsai.ui.navigation
 
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.rounded.Add
-import androidx.compose.material.icons.rounded.Home
-import androidx.compose.material.icons.rounded.Person
-import androidx.compose.material.icons.rounded.Settings
+import androidx.compose.material.icons.automirrored.rounded.List
+import androidx.compose.material.icons.rounded.*
 import androidx.compose.ui.graphics.vector.ImageVector
 
 sealed class Screen(val route: String, val title: String = "", val icon: ImageVector? = null) {
     object Onboarding : Screen("onboarding")
-    object PlayerHome : Screen("player_home")
+    object PlayerHome : Screen("player_home", "Home", Icons.Rounded.Home)
     object TurfOwnerHome : Screen("turf_owner_home", "Home", Icons.Rounded.Home)
-    object PlayerDiscovery : Screen("player_discovery")
-    object TurfDiscovery : Screen("turf_discovery")
+    object PlayerDiscovery : Screen("player_discovery", "Players", Icons.Rounded.Groups)
+    object TurfDiscovery : Screen("turf_discovery", "Turfs", Icons.Rounded.SportsFootball)
     object TurfDetail : Screen("turf_detail/{turfId}") {
         fun createRoute(turfId: Long) = "turf_detail/$turfId"
     }
-    object CreateMatch : Screen("create_match")
+    object CreateMatch : Screen("create_match", "Match", Icons.Rounded.AddBox)
     object Profile : Screen("profile", "Profile", Icons.Rounded.Person)
     object PastBookings : Screen("past_bookings")
     

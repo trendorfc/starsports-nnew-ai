@@ -5,6 +5,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.ArrowBack
+import androidx.compose.material.icons.rounded.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -14,6 +15,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
+import com.example.strykesportsai.ui.navigation.PlayerBottomBar
+import com.example.strykesportsai.ui.navigation.Screen
 import com.example.strykesportsai.data.local.entity.TurfEntity
 import com.example.strykesportsai.ui.player.PlayerViewModel
 import kotlinx.coroutines.flow.collectLatest
@@ -22,6 +25,11 @@ import kotlinx.coroutines.flow.collectLatest
 @Composable
 fun CreateMatchScreen(
     viewModel: PlayerViewModel,
+    onNavigateToHome: () -> Unit,
+    onNavigateToPlayers: () -> Unit,
+    onNavigateToTurfs: () -> Unit,
+    onNavigateToCreateMatch: () -> Unit,
+    onNavigateToProfile: () -> Unit,
     onNavigateBack: () -> Unit
 ) {
     var sport by remember { mutableStateOf("") }
@@ -60,6 +68,16 @@ fun CreateMatchScreen(
                         Icon(Icons.AutoMirrored.Rounded.ArrowBack, contentDescription = "Back")
                     }
                 }
+            )
+        },
+        bottomBar = {
+            PlayerBottomBar(
+                selectedScreen = Screen.CreateMatch,
+                onNavigateToHome = onNavigateToHome,
+                onNavigateToPlayers = onNavigateToPlayers,
+                onNavigateToTurfs = onNavigateToTurfs,
+                onNavigateToCreateMatch = onNavigateToCreateMatch,
+                onNavigateToProfile = onNavigateToProfile
             )
         }
     ) { padding ->

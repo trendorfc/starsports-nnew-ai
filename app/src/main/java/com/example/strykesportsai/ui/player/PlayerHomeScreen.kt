@@ -7,12 +7,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Search
-import androidx.compose.material.icons.rounded.Person
-import androidx.compose.material.icons.rounded.Groups
-import androidx.compose.material.icons.rounded.SportsFootball
-import androidx.compose.material.icons.rounded.AddBox
-import androidx.compose.material.icons.rounded.SwapHoriz
-import androidx.compose.material.icons.rounded.Logout
+import androidx.compose.material.icons.rounded.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -23,12 +18,15 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
+import com.example.strykesportsai.ui.navigation.PlayerBottomBar
+import com.example.strykesportsai.ui.navigation.Screen
 import com.example.strykesportsai.data.local.entity.UserEntity
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
 @Composable
 fun PlayerHomeScreen(
     viewModel: PlayerViewModel,
+    onNavigateToHome: () -> Unit,
     onNavigateToPlayers: () -> Unit,
     onNavigateToTurfs: () -> Unit,
     onNavigateToCreateMatch: () -> Unit,
@@ -62,32 +60,14 @@ fun PlayerHomeScreen(
             )
         },
         bottomBar = {
-            NavigationBar {
-                NavigationBarItem(
-                    selected = true, // Simplified for now
-                    onClick = onNavigateToPlayers,
-                    icon = { Icon(Icons.Rounded.Groups, contentDescription = null) },
-                    label = { Text("Players") }
-                )
-                NavigationBarItem(
-                    selected = false,
-                    onClick = onNavigateToTurfs,
-                    icon = { Icon(Icons.Rounded.SportsFootball, contentDescription = null) },
-                    label = { Text("Turfs") }
-                )
-                NavigationBarItem(
-                    selected = false,
-                    onClick = onNavigateToCreateMatch,
-                    icon = { Icon(Icons.Rounded.AddBox, contentDescription = null) },
-                    label = { Text("Match") }
-                )
-                NavigationBarItem(
-                    selected = false,
-                    onClick = onNavigateToProfile,
-                    icon = { Icon(Icons.Rounded.Person, contentDescription = null) },
-                    label = { Text("Profile") }
-                )
-            }
+            PlayerBottomBar(
+                selectedScreen = Screen.PlayerHome,
+                onNavigateToHome = onNavigateToHome,
+                onNavigateToPlayers = onNavigateToPlayers,
+                onNavigateToTurfs = onNavigateToTurfs,
+                onNavigateToCreateMatch = onNavigateToCreateMatch,
+                onNavigateToProfile = onNavigateToProfile
+            )
         }
     ) { padding ->
         Column(

@@ -110,6 +110,7 @@ fun StrykeNavGraph(
         composable(Screen.PlayerHome.route) {
             PlayerHomeScreen(
                 viewModel = playerViewModel,
+                onNavigateToHome = { /* Already here */ },
                 onNavigateToPlayers = { navController.navigate(Screen.PlayerDiscovery.route) },
                 onNavigateToTurfs = { navController.navigate(Screen.TurfDiscovery.route) },
                 onNavigateToCreateMatch = { navController.navigate(Screen.CreateMatch.route) },
@@ -119,13 +120,19 @@ fun StrykeNavGraph(
         composable(Screen.PlayerDiscovery.route) {
             PlayerDiscoveryScreen(
                 viewModel = playerViewModel,
+                onNavigateToHome = { navController.navigate(Screen.PlayerHome.route) },
+                onNavigateToPlayers = { /* Already here */ },
+                onNavigateToTurfs = { navController.navigate(Screen.TurfDiscovery.route) },
+                onNavigateToCreateMatch = { navController.navigate(Screen.CreateMatch.route) },
+                onNavigateToProfile = { navController.navigate(Screen.Profile.route) },
                 onNavigateBack = { navController.popBackStack() }
             )
         }
         composable(Screen.TurfDiscovery.route) {
             TurfDiscoveryScreen(
                 viewModel = playerViewModel,
-                onNavigateToPlayers = { navController.navigate(Screen.PlayerHome.route) },
+                onNavigateToHome = { navController.navigate(Screen.PlayerHome.route) },
+                onNavigateToPlayers = { navController.navigate(Screen.PlayerDiscovery.route) },
                 onNavigateToTurfs = { /* Already here */ },
                 onNavigateToCreateMatch = { navController.navigate(Screen.CreateMatch.route) },
                 onNavigateToProfile = { navController.navigate(Screen.Profile.route) },
@@ -150,13 +157,19 @@ fun StrykeNavGraph(
         composable(Screen.CreateMatch.route) {
             CreateMatchScreen(
                 viewModel = playerViewModel,
+                onNavigateToHome = { navController.navigate(Screen.PlayerHome.route) },
+                onNavigateToPlayers = { navController.navigate(Screen.PlayerDiscovery.route) },
+                onNavigateToTurfs = { navController.navigate(Screen.TurfDiscovery.route) },
+                onNavigateToCreateMatch = { /* Already here */ },
+                onNavigateToProfile = { navController.navigate(Screen.Profile.route) },
                 onNavigateBack = { navController.popBackStack() }
             )
         }
         composable(Screen.Profile.route) {
             ProfileScreen(
                 viewModel = playerViewModel,
-                onNavigateToPlayers = { navController.navigate(Screen.PlayerHome.route) },
+                onNavigateToHome = { navController.navigate(Screen.PlayerHome.route) },
+                onNavigateToPlayers = { navController.navigate(Screen.PlayerDiscovery.route) },
                 onNavigateToTurfs = { navController.navigate(Screen.TurfDiscovery.route) },
                 onNavigateToCreateMatch = { navController.navigate(Screen.CreateMatch.route) },
                 onNavigateToProfile = { /* Already here */ },
