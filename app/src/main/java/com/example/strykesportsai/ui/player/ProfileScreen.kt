@@ -3,11 +3,12 @@ package com.example.strykesportsai.ui.player
 import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.foundation.*
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.rounded.ChevronRight
 import androidx.compose.material.icons.automirrored.rounded.Logout
 import androidx.compose.material.icons.rounded.*
 import androidx.compose.material3.*
@@ -21,22 +22,29 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
-import com.example.strykesportsai.ui.navigation.PlayerBottomBar
-import com.example.strykesportsai.ui.navigation.Screen
 import coil.compose.AsyncImage
+import com.example.strykesportsai.data.local.entity.UserEntity
+import com.example.strykesportsai.ui.navigation.Screen
+import com.example.strykesportsai.ui.navigation.PlayerBottomBar
+import java.io.File
+import java.io.FileOutputStream
+import android.content.Context
+import androidx.compose.ui.platform.LocalContext
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ProfileScreen(
     viewModel: PlayerViewModel,
     onNavigateToHome: () -> Unit,
-    onNavigateToPlayers: () -> Unit,
+    onNavigateToMyMatches: () -> Unit,
     onNavigateToTurfs: () -> Unit,
     onNavigateToCreateMatch: () -> Unit,
     onNavigateToProfile: () -> Unit,
-    onNavigateToPastBookings: () -> Unit
+    onNavigateToPastBookings: () -> Unit,
+    onNavigateToPastMatches: () -> Unit
 ) {
     val user by viewModel.user.collectAsState()
+    val context = LocalContext.current
     var showEditNameDialog by remember { mutableStateOf(false) }
     var newName by remember { mutableStateOf("") }
     
@@ -67,7 +75,7 @@ fun ProfileScreen(
             PlayerBottomBar(
                 selectedScreen = Screen.Profile,
                 onNavigateToHome = onNavigateToHome,
-                onNavigateToPlayers = onNavigateToPlayers,
+                onNavigateToMyMatches = onNavigateToMyMatches,
                 onNavigateToTurfs = onNavigateToTurfs,
                 onNavigateToCreateMatch = onNavigateToCreateMatch,
                 onNavigateToProfile = onNavigateToProfile
@@ -108,35 +116,29 @@ fun ProfileScreen(
                 }
                 
                 SmallFloatingActionButton(
-                    onClick = { 
-                        if (user?.profileImageUrl == null) {
-                            photoPickerLauncher.launch("image/*")
-                        } else {
-                            viewModel.updateProfile(user?.name ?: "", null)
-                        }
-                    },
+                    onClick = { photoPickerLauncher.launch("image/*") },
+                    containerColor = MaterialTheme.colorScheme.primaryContainer,
+                    contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
                     shape = CircleShape,
-                    containerColor = MaterialTheme.colorScheme.primaryContainer
+                    modifier = Modifier.size(36.dp)
                 ) {
-                    Icon(
-                        if (user?.profileImageUrl == null) Icons.Rounded.AddAPhoto else Icons.Rounded.Delete,
-                        contentDescription = "Edit Photo",
-                        modifier = Modifier.size(16.dp)
-                    )
+                    Icon(Icons.Rounded.CameraAlt, contentDescription = "Change Photo", modifier = Modifier.size(18.dp))
                 }
             }
-            
+
             UserInfoSection(user)
 
             HorizontalDivider()
 
             ProfileActionsSection(
                 user = user,
+                viewModel = viewModel,
                 onEditName = { 
                     newName = user?.name ?: ""
                     showEditNameDialog = true 
                 },
                 onViewPastBookings = onNavigateToPastBookings,
+                onViewPastMatches = onNavigateToPastMatches,
                 onSwitchRole = { viewModel.switchRole() },
                 onLogout = { viewModel.logout() }
             )
@@ -146,10 +148,15 @@ fun ProfileScreen(
     if (showCropDialog && selectedImageUri != null) {
         CropPreviewDialog(
             imageUri = selectedImageUri!!,
-            onDismiss = { showCropDialog = false },
-            onConfirm = { croppedUri ->
-                viewModel.updateProfile(user?.name ?: "", croppedUri.toString())
+            onDismiss = { 
                 showCropDialog = false
+                selectedImageUri = null
+            },
+            onConfirm = { croppedUri ->
+                val internalUri = saveImageToInternalStorage(context, croppedUri)
+                viewModel.updateProfile(user?.name ?: "User", internalUri?.toString())
+                showCropDialog = false
+                selectedImageUri = null
             }
         )
     }
@@ -159,27 +166,47 @@ fun ProfileScreen(
             currentName = newName,
             onNameChange = { newName = it },
             onDismiss = { showEditNameDialog = false },
-            onSave = {
-                if (newName.isNotBlank()) {
-                    viewModel.updateProfile(newName, user?.profileImageUrl)
-                    showEditNameDialog = false
-                }
+            onConfirm = {
+                viewModel.updateProfile(newName, user?.profileImageUrl)
+                showEditNameDialog = false
             }
         )
     }
 }
 
+fun saveImageToInternalStorage(context: Context, uri: Uri): Uri? {
+    return try {
+        val inputStream = context.contentResolver.openInputStream(uri)
+        val file = File(context.filesDir, "profile_picture_${System.currentTimeMillis()}.jpg")
+        val outputStream = FileOutputStream(file)
+        inputStream?.use { input ->
+            outputStream.use { output ->
+                input.copyTo(output)
+            }
+        }
+        Uri.fromFile(file)
+    } catch (e: Exception) {
+        e.printStackTrace()
+        null
+    }
+}
+
 @Composable
-fun UserInfoSection(user: com.example.strykesportsai.data.local.entity.UserEntity?) {
+fun UserInfoSection(user: UserEntity?) {
     Column(horizontalAlignment = Alignment.CenterHorizontally) {
         Text(
-            text = user?.name ?: "Player Name",
-            style = MaterialTheme.typography.headlineMedium,
+            text = user?.name ?: "User Name",
+            style = MaterialTheme.typography.headlineSmall,
             fontWeight = FontWeight.Bold
         )
         Text(
-            text = user?.sportsInterests ?: "No interests added",
-            style = MaterialTheme.typography.bodyLarge,
+            text = "Birthday: ${user?.dob ?: "Not set"}",
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
+        Text(
+            text = "Interests: ${user?.sportsInterests ?: "None"}",
+            style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )
     }
@@ -187,9 +214,11 @@ fun UserInfoSection(user: com.example.strykesportsai.data.local.entity.UserEntit
 
 @Composable
 fun ProfileActionsSection(
-    user: com.example.strykesportsai.data.local.entity.UserEntity?,
+    user: UserEntity?,
+    viewModel: PlayerViewModel,
     onEditName: () -> Unit,
     onViewPastBookings: () -> Unit,
+    onViewPastMatches: () -> Unit,
     onSwitchRole: () -> Unit,
     onLogout: () -> Unit
 ) {
@@ -199,16 +228,25 @@ fun ProfileActionsSection(
             title = "Change Name",
             onClick = onEditName
         )
+        
         ProfileOptionItem(
             icon = Icons.Rounded.History,
-            title = "View Past Bookings",
+            title = "Past Bookings",
             onClick = onViewPastBookings
         )
+
+        ProfileOptionItem(
+            icon = Icons.Rounded.Sports,
+            title = "Past Matches",
+            onClick = onViewPastMatches
+        )
+
         ProfileOptionItem(
             icon = Icons.Rounded.SwapHoriz,
             title = "Switch to Owner Role",
             onClick = onSwitchRole
         )
+        
         ProfileOptionItem(
             icon = Icons.AutoMirrored.Rounded.Logout,
             title = "Logout",
@@ -240,43 +278,39 @@ fun CropPreviewDialog(
                 
                 Box(
                     modifier = Modifier
-                        .size(250.dp)
+                        .size(200.dp)
                         .clip(CircleShape)
-                        .background(Color.LightGray),
-                    contentAlignment = Alignment.Center
+                        .border(1.dp, MaterialTheme.colorScheme.outline, CircleShape)
                 ) {
                     AsyncImage(
                         model = imageUri,
-                        contentDescription = "Preview",
+                        contentDescription = "Preview Image",
                         modifier = Modifier.fillMaxSize(),
                         contentScale = ContentScale.Crop
                     )
-                    Canvas(modifier = Modifier.fillMaxSize()) {
-                        drawCircle(
-                            color = Color.White.copy(alpha = 0.5f),
-                            radius = size.minDimension / 2,
-                            style = androidx.compose.ui.graphics.drawscope.Stroke(width = 4.dp.toPx())
-                        )
-                    }
                 }
-                
+
                 Text(
-                    "The photo will be cropped to a circle.",
+                    "This is how your photo will look to others.",
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
 
                 Row(
                     modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.End,
-                    verticalAlignment = Alignment.CenterVertically
+                    horizontalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
-                    TextButton(onClick = onDismiss) {
+                    OutlinedButton(
+                        onClick = onDismiss,
+                        modifier = Modifier.weight(1f)
+                    ) {
                         Text("Cancel")
                     }
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Button(onClick = { onConfirm(imageUri) }) {
-                        Text("Confirm")
+                    Button(
+                        onClick = { onConfirm(imageUri) },
+                        modifier = Modifier.weight(1f)
+                    ) {
+                        Text("Use Photo")
                     }
                 }
             }
@@ -289,22 +323,22 @@ fun EditNameDialog(
     currentName: String,
     onNameChange: (String) -> Unit,
     onDismiss: () -> Unit,
-    onSave: () -> Unit
+    onConfirm: () -> Unit
 ) {
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text("Change Name") },
+        title = { Text("Edit Name") },
         text = {
             OutlinedTextField(
                 value = currentName,
                 onValueChange = onNameChange,
-                label = { Text("New Name") },
+                label = { Text("Name") },
                 singleLine = true,
                 modifier = Modifier.fillMaxWidth()
             )
         },
         confirmButton = {
-            TextButton(onClick = onSave) {
+            TextButton(onClick = onConfirm) {
                 Text("Save")
             }
         },
@@ -325,21 +359,32 @@ fun ProfileOptionItem(
 ) {
     Surface(
         onClick = onClick,
-        modifier = Modifier.fillMaxWidth(),
         shape = MaterialTheme.shapes.medium,
-        color = MaterialTheme.colorScheme.surface
+        color = Color.Transparent
     ) {
         Row(
             modifier = Modifier
-                .padding(16.dp)
-                .fillMaxWidth(),
+                .fillMaxWidth()
+                .padding(vertical = 12.dp, horizontal = 16.dp),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            Icon(icon, contentDescription = null, tint = textColor)
-            Text(text = title, style = MaterialTheme.typography.bodyLarge, fontWeight = FontWeight.Medium, color = textColor)
-            Spacer(modifier = Modifier.weight(1f))
-            Icon(Icons.Rounded.ChevronRight, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant)
+            Icon(
+                icon,
+                contentDescription = null,
+                tint = if (textColor == MaterialTheme.colorScheme.error) textColor else MaterialTheme.colorScheme.primary
+            )
+            Text(
+                text = title,
+                style = MaterialTheme.typography.bodyLarge,
+                color = textColor,
+                modifier = Modifier.weight(1f)
+            )
+            Icon(
+                Icons.Rounded.ChevronRight,
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.4f)
+            )
         }
     }
 }

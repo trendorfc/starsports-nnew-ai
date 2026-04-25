@@ -15,7 +15,7 @@ import androidx.compose.ui.unit.dp
 fun PlayerBottomBar(
     selectedScreen: Screen,
     onNavigateToHome: () -> Unit,
-    onNavigateToPlayers: () -> Unit,
+    onNavigateToMyMatches: () -> Unit,
     onNavigateToTurfs: () -> Unit,
     onNavigateToCreateMatch: () -> Unit,
     onNavigateToProfile: () -> Unit
@@ -38,10 +38,10 @@ fun PlayerBottomBar(
                 label = { Text("Home") }
             )
             NavigationBarItem(
-                selected = selectedScreen == Screen.PlayerDiscovery,
-                onClick = onNavigateToPlayers,
-                icon = { Icon(Icons.Rounded.Groups, contentDescription = null) },
-                label = { Text("Players") }
+                selected = selectedScreen == Screen.MyMatches,
+                onClick = onNavigateToMyMatches,
+                icon = { Icon(Icons.Rounded.Sports, contentDescription = null) },
+                label = { Text("My Matches") }
             )
             
             // Placeholder for the central FAB

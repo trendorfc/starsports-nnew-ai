@@ -32,7 +32,7 @@ import com.example.strykesportsai.ui.player.PlayerViewModel
 fun TurfDiscoveryScreen(
     viewModel: PlayerViewModel,
     onNavigateToHome: () -> Unit,
-    onNavigateToPlayers: () -> Unit,
+    onNavigateToMyMatches: () -> Unit,
     onNavigateToTurfs: () -> Unit,
     onNavigateToCreateMatch: () -> Unit,
     onNavigateToProfile: () -> Unit,
@@ -62,7 +62,7 @@ fun TurfDiscoveryScreen(
             PlayerBottomBar(
                 selectedScreen = Screen.TurfDiscovery,
                 onNavigateToHome = onNavigateToHome,
-                onNavigateToPlayers = onNavigateToPlayers,
+                onNavigateToMyMatches = onNavigateToMyMatches,
                 onNavigateToTurfs = onNavigateToTurfs,
                 onNavigateToCreateMatch = onNavigateToCreateMatch,
                 onNavigateToProfile = onNavigateToProfile
@@ -119,12 +119,13 @@ fun TurfDiscoveryScreen(
                     )
                 }
             } else {
+                val distinctTurfs = remember(turfs) { turfs.distinctBy { it.name + it.location } }
                 LazyColumn(
                     contentPadding = PaddingValues(16.dp),
                     verticalArrangement = Arrangement.spacedBy(16.dp),
                     modifier = Modifier.weight(1f)
                 ) {
-                    items(turfs) { turf ->
+                    items(distinctTurfs) { turf ->
                         TurfListItem(
                             turf = turf,
                             onViewDetails = { onNavigateToDetail(turf.id) }

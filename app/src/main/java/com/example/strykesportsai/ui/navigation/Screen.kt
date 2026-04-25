@@ -8,8 +8,9 @@ import androidx.compose.ui.graphics.vector.ImageVector
 sealed class Screen(val route: String, val title: String = "", val icon: ImageVector? = null) {
     object Onboarding : Screen("onboarding")
     object PlayerHome : Screen("player_home", "Home", Icons.Rounded.Home)
+    object PlayerDiscovery : Screen("player_discovery", "Players", Icons.Rounded.People)
     object TurfOwnerHome : Screen("turf_owner_home", "Home", Icons.Rounded.Home)
-    object PlayerDiscovery : Screen("player_discovery", "Players", Icons.Rounded.Groups)
+    object MyMatches : Screen("my_matches", "My Matches", Icons.Rounded.Sports)
     object TurfDiscovery : Screen("turf_discovery", "Turfs", Icons.Rounded.SportsFootball)
     object TurfDetail : Screen("turf_detail/{turfId}") {
         fun createRoute(turfId: Long) = "turf_detail/$turfId"
@@ -17,6 +18,7 @@ sealed class Screen(val route: String, val title: String = "", val icon: ImageVe
     object CreateMatch : Screen("create_match", "Match", Icons.Rounded.AddBox)
     object Profile : Screen("profile", "Profile", Icons.Rounded.Person)
     object PastBookings : Screen("past_bookings")
+    object PastMatches : Screen("past_matches")
     
     // Owner Screens
     object ListTurf : Screen("list_turf", "Add Turf", Icons.Rounded.Add)

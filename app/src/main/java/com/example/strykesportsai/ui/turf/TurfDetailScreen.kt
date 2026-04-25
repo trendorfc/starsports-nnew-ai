@@ -52,6 +52,11 @@ fun TurfDetailScreen(
     val dateFormatter = DateTimeFormatter.ofPattern("EEE, MMM d")
 
     var selectedSlot by remember { mutableStateOf<LocalTime?>(null) }
+    var selectedSportForBooking by remember { mutableStateOf<String?>(null) }
+
+    val availableSportsInTurf = remember(turf?.sportsSupported) {
+        turf?.sportsSupported?.split(",")?.map { it.trim() }?.filter { it.isNotBlank() } ?: emptyList()
+    }
 
     LaunchedEffect(selectedDate) {
         selectedSlot = null
@@ -149,6 +154,27 @@ fun TurfDetailScreen(
                         style = MaterialTheme.typography.bodyMedium
                     )
 
+                    if (availableSportsInTurf.isNotEmpty()) {
+                        Spacer(modifier = Modifier.height(24.dp))
+                        Text(
+                            text = "Select Sport",
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.SemiBold
+                        )
+                        Spacer(modifier = Modifier.height(12.dp))
+                        LazyRow(
+                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            items(availableSportsInTurf) { sport ->
+                                FilterChip(
+                                    selected = selectedSportForBooking == sport,
+                                    onClick = { selectedSportForBooking = sport },
+                                    label = { Text(sport) }
+                                )
+                            }
+                        }
+                    }
+
                     Spacer(modifier = Modifier.height(24.dp))
 
                     Text(
@@ -222,7 +248,7 @@ fun TurfDetailScreen(
                         modifier = Modifier
                             .fillMaxWidth()
                             .height(56.dp),
-                        enabled = selectedSlot != null,
+                        enabled = selectedSlot != null && (availableSportsInTurf.isEmpty() || selectedSportForBooking != null),
                         shape = MaterialTheme.shapes.medium
                     ) {
                         Text("Book Slot - ₹${turf.pricePerHour}", fontSize = 16.sp)

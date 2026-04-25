@@ -7,7 +7,7 @@ import kotlinx.coroutines.flow.Flow
 @Dao
 interface MatchDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insertMatch(match: MatchEntity)
+    suspend fun insertMatch(match: MatchEntity): Long
 
     @Query("SELECT * FROM matches")
     fun getAllMatches(): Flow<List<MatchEntity>>

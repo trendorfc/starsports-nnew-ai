@@ -74,6 +74,45 @@ class PlayerViewModel(private val repository: StrykeRepository) : ViewModel() {
         initialValue = emptyList()
     )
 
+    private val _joinedMatchIds = MutableStateFlow<Set<Long>>(emptySet())
+    val joinedMatchIds: StateFlow<Set<Long>> = _joinedMatchIds.asStateFlow()
+
+    fun joinMatch(matchId: Long) {
+        _joinedMatchIds.value = _joinedMatchIds.value + matchId
+    }
+
+    private val _leftMatchIds = MutableStateFlow<Set<Long>>(emptySet())
+    val leftMatchIds: StateFlow<Set<Long>> = _leftMatchIds.asStateFlow()
+
+    fun leaveMatch(matchId: Long, reason: String) {
+        _joinedMatchIds.value = _joinedMatchIds.value - matchId
+        _leftMatchIds.value = _leftMatchIds.value + matchId
+    }
+
+    val upcomingMatches = combine(matches, selectedSport, leftMatchIds) { list, sport, leftIds ->
+        val currentTime = System.currentTimeMillis()
+        list.filter { it.startTime > currentTime }
+            .filter { !leftIds.contains(it.id) }
+            .filter { sport == null || it.sport.equals(sport, ignoreCase = true) }
+            .sortedBy { it.startTime }
+    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
+
+    val myJoinedMatches = combine(matches, joinedMatchIds, user) { list, joinedIds, currentUser ->
+        val currentTime = System.currentTimeMillis()
+        list.filter { it.creatorId == currentUser?.id || joinedIds.contains(it.id) }
+            .filter { it.startTime > currentTime }
+            .sortedBy { it.startTime }
+    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
+
+    val pastMatches = combine(matches, joinedMatchIds, leftMatchIds, user) { list, joinedIds, leftIds, currentUser ->
+        val currentTime = System.currentTimeMillis()
+        list.filter { 
+            (it.startTime <= currentTime && (it.creatorId == currentUser?.id || joinedIds.contains(it.id))) ||
+            leftIds.contains(it.id)
+        }
+            .sortedByDescending { it.startTime }
+    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
+
     fun onSportSelected(sport: String?) {
         _selectedSport.value = sport
     }
@@ -127,7 +166,8 @@ class PlayerViewModel(private val repository: StrykeRepository) : ViewModel() {
                 currentPlayers = 1,
                 description = description
             )
-            repository.saveMatch(match)
+            val id = repository.saveMatch(match)
+            _joinedMatchIds.value = _joinedMatchIds.value + (id as Long)
             _selectedSport.value = null // Reset filter to show all matches
             _createMatchSuccess.emit(true)
         }

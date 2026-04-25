@@ -22,7 +22,7 @@ import kotlinx.coroutines.launch
 fun PlayerDiscoveryScreen(
     viewModel: PlayerViewModel,
     onNavigateToHome: () -> Unit,
-    onNavigateToPlayers: () -> Unit,
+    onNavigateToMyMatches: () -> Unit,
     onNavigateToTurfs: () -> Unit,
     onNavigateToCreateMatch: () -> Unit,
     onNavigateToProfile: () -> Unit,
@@ -48,7 +48,7 @@ fun PlayerDiscoveryScreen(
             PlayerBottomBar(
                 selectedScreen = Screen.PlayerDiscovery,
                 onNavigateToHome = onNavigateToHome,
-                onNavigateToPlayers = onNavigateToPlayers,
+                onNavigateToMyMatches = onNavigateToMyMatches,
                 onNavigateToTurfs = onNavigateToTurfs,
                 onNavigateToCreateMatch = onNavigateToCreateMatch,
                 onNavigateToProfile = onNavigateToProfile

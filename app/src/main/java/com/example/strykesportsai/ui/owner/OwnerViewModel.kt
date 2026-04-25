@@ -36,7 +36,7 @@ class OwnerViewModel(private val repository: StrykeRepository) : ViewModel() {
     private val _operationSuccess = MutableSharedFlow<Boolean>()
     val operationSuccess = _operationSuccess.asSharedFlow()
 
-    fun saveTurf(name: String, location: String, sports: String, price: Double, description: String, turfId: Long = 0) {
+    fun saveTurf(name: String, location: String, sports: String, price: Double, description: String, imageUrl: String = "", turfId: Long = 0) {
         viewModelScope.launch {
             val ownerId = user.value?.id ?: 0L
             val turf = TurfEntity(
@@ -47,7 +47,7 @@ class OwnerViewModel(private val repository: StrykeRepository) : ViewModel() {
                 sportsSupported = sports,
                 pricePerHour = price,
                 description = description,
-                imageUrls = ""
+                imageUrls = imageUrl
             )
             repository.saveTurf(turf)
             _operationSuccess.emit(true)

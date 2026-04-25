@@ -26,7 +26,7 @@ import kotlinx.coroutines.flow.collectLatest
 fun CreateMatchScreen(
     viewModel: PlayerViewModel,
     onNavigateToHome: () -> Unit,
-    onNavigateToPlayers: () -> Unit,
+    onNavigateToMyMatches: () -> Unit,
     onNavigateToTurfs: () -> Unit,
     onNavigateToCreateMatch: () -> Unit,
     onNavigateToProfile: () -> Unit,
@@ -74,7 +74,7 @@ fun CreateMatchScreen(
             PlayerBottomBar(
                 selectedScreen = Screen.CreateMatch,
                 onNavigateToHome = onNavigateToHome,
-                onNavigateToPlayers = onNavigateToPlayers,
+                onNavigateToMyMatches = onNavigateToMyMatches,
                 onNavigateToTurfs = onNavigateToTurfs,
                 onNavigateToCreateMatch = onNavigateToCreateMatch,
                 onNavigateToProfile = onNavigateToProfile

@@ -36,5 +36,5 @@ class StrykeRepository(
     // Matches
     fun getAllMatches(): Flow<List<MatchEntity>> = matchDao.getAllMatches()
     fun getMatchesByCreator(creatorId: Long): Flow<List<MatchEntity>> = matchDao.getMatchesByCreator(creatorId)
-    suspend fun saveMatch(match: MatchEntity) = matchDao.insertMatch(match)
+    suspend fun saveMatch(match: MatchEntity): Long = matchDao.insertMatch(match)
 }
