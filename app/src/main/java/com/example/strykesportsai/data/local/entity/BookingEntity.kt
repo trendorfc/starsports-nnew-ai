@@ -16,6 +16,7 @@ data class BookingEntity(
     val id: Long = 0,
     val userId: Long,
     val turfId: Long,
+    val sport: String = "", // Added sport field
     val startTime: Long, // Timestamp
     val endTime: Long, // Timestamp
     val status: BookingStatus,

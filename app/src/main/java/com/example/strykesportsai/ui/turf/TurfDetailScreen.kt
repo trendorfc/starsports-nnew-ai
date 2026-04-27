@@ -32,6 +32,7 @@ fun TurfDetailScreen(
     turfId: Long,
     playerViewModel: PlayerViewModel,
     turfViewModel: TurfViewModel,
+    onNavigateToPayment: (Long, String, Long, Double) -> Unit,
     onNavigateBack: () -> Unit
 ) {
     val turfs by playerViewModel.turfs.collectAsState()
@@ -44,11 +45,16 @@ fun TurfDetailScreen(
     val dates = (0..6).map { today.plusDays(it.toLong()) }
     var selectedDate by remember { mutableStateOf(today) }
 
-    val slots = listOf(
-        LocalTime.of(6, 0), LocalTime.of(7, 0), LocalTime.of(8, 0),
-        LocalTime.of(17, 0), LocalTime.of(18, 0), LocalTime.of(19, 0), LocalTime.of(20, 0)
-    )
-    val timeFormatter = DateTimeFormatter.ofPattern("hh:mm a")
+    val availableTimings = remember(turf?.availableTimings) {
+        turf?.availableTimings?.split(",")?.map { it.trim() }?.filter { it.isNotBlank() }
+            ?.map { LocalTime.parse(it, DateTimeFormatter.ofPattern("HH:mm")) }
+            ?: listOf(
+                LocalTime.of(6, 0), LocalTime.of(7, 0), LocalTime.of(8, 0),
+                LocalTime.of(17, 0), LocalTime.of(18, 0), LocalTime.of(19, 0), LocalTime.of(20, 0)
+            )
+    }
+
+    val timeFormatter = DateTimeFormatter.ofPattern("h a")
     val dateFormatter = DateTimeFormatter.ofPattern("EEE, MMM d")
 
     var selectedSlot by remember { mutableStateOf<LocalTime?>(null) }
@@ -88,14 +94,22 @@ fun TurfDetailScreen(
                 CircularProgressIndicator()
             }
         } else {
+            val openDaysList = remember(turf.openDays) {
+                turf.openDays.split(",").map { it.trim() }.filter { it.isNotBlank() }
+            }
+            val currentDayName = selectedDate.dayOfWeek.name.lowercase().replaceFirstChar { it.uppercase() }
+            val isClosedToday = !openDaysList.contains(currentDayName)
+
             Column(
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(padding)
                     .verticalScroll(rememberScrollState())
             ) {
-                // Dynamic Turf Image
-                val imageUrl = remember(turf.sportsSupported) {
+                // ... (image logic stays same)
+                val imageUrl = if (turf.imageUrls.isNotBlank()) {
+                    turf.imageUrls.split(",").firstOrNull()?.trim()
+                } else {
                     val sports = turf.sportsSupported.split(",").map { it.trim().lowercase() }
                     when {
                         sports.contains("football") && sports.contains("cricket") -> "https://images.unsplash.com/photo-1574629810360-7efbbe195018"
@@ -104,7 +118,7 @@ fun TurfDetailScreen(
                         sports.contains("tennis") -> "https://images.unsplash.com/photo-1595435064212-36aa3664d603"
                         sports.contains("badminton") -> "https://images.unsplash.com/photo-1626225967045-9410dd99eaa6"
                         sports.contains("basketball") -> "https://images.unsplash.com/photo-1546519638-68e109498ffc"
-                        else -> turf.imageUrls.split(",").firstOrNull()?.trim()
+                        else -> null
                     }
                 }
 
@@ -205,25 +219,38 @@ fun TurfDetailScreen(
                     )
                     Spacer(modifier = Modifier.height(12.dp))
                     
-                    val now = LocalDateTime.now()
-                    LazyRow(
-                        horizontalArrangement = Arrangement.spacedBy(8.dp)
-                    ) {
-                        items(slots) { slot ->
-                            val slotDateTime = LocalDateTime.of(selectedDate, slot)
-                            val isPast = slotDateTime.isBefore(now)
-                            
-                            FilterChip(
-                                selected = selectedSlot == slot,
-                                onClick = { if (!isPast) selectedSlot = slot },
-                                label = { 
-                                    Text(
-                                        text = slot.format(timeFormatter),
-                                        color = if (isPast) Color.Gray else Color.Unspecified
-                                    ) 
-                                },
-                                enabled = !isPast
-                            )
+                    if (isClosedToday) {
+                        Text(
+                            text = "Closed on $currentDayName",
+                            color = MaterialTheme.colorScheme.error,
+                            style = MaterialTheme.typography.bodyLarge,
+                            fontWeight = FontWeight.Medium,
+                            modifier = Modifier.padding(vertical = 8.dp)
+                        )
+                    } else {
+                        val now = LocalDateTime.now()
+                        LazyRow(
+                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            items(availableTimings) { slot ->
+                                val slotDateTime = LocalDateTime.of(selectedDate, slot)
+                                val isPast = slotDateTime.isBefore(now)
+                                
+                                val endSlot = slot.plusHours(1)
+                                val slotText = "${slot.format(timeFormatter).lowercase()} to ${endSlot.format(timeFormatter).lowercase()}"
+
+                                FilterChip(
+                                    selected = selectedSlot == slot,
+                                    onClick = { if (!isPast) selectedSlot = slot },
+                                    label = { 
+                                        Text(
+                                            text = slotText,
+                                            color = if (isPast) Color.Gray else Color.Unspecified
+                                        ) 
+                                    },
+                                    enabled = !isPast
+                                )
+                            }
                         }
                     }
 
@@ -237,18 +264,18 @@ fun TurfDetailScreen(
                                     .toInstant()
                                     .toEpochMilli()
                                     
-                                turfViewModel.bookSlot(
-                                    userId = user!!.id,
-                                    turfId = turf.id,
-                                    startTime = bookingStartTime,
-                                    price = turf.pricePerHour
+                                onNavigateToPayment(
+                                    turf.id,
+                                    selectedSportForBooking ?: availableSportsInTurf.firstOrNull() ?: "General",
+                                    bookingStartTime,
+                                    turf.pricePerHour
                                 )
                             }
                         },
                         modifier = Modifier
                             .fillMaxWidth()
                             .height(56.dp),
-                        enabled = selectedSlot != null && (availableSportsInTurf.isEmpty() || selectedSportForBooking != null),
+                        enabled = selectedSlot != null && (availableSportsInTurf.isEmpty() || selectedSportForBooking != null) && !isClosedToday,
                         shape = MaterialTheme.shapes.medium
                     ) {
                         Text("Book Slot - ₹${turf.pricePerHour}", fontSize = 16.sp)

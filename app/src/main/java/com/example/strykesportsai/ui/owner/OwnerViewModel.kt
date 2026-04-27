@@ -54,6 +54,21 @@ class OwnerViewModel(private val repository: StrykeRepository) : ViewModel() {
         }
     }
 
+    fun deleteTurf(turf: TurfEntity) {
+        viewModelScope.launch {
+            repository.deleteTurf(turf)
+        }
+    }
+
+    fun updateTurfTimings(turfId: Long, timings: String, openDays: String) {
+        viewModelScope.launch {
+            val turf = ownerTurfs.value.find { it.id == turfId }
+            turf?.let {
+                repository.saveTurf(it.copy(availableTimings = timings, openDays = openDays))
+            }
+        }
+    }
+
     fun getBookingsForTurf(turfId: Long): Flow<List<BookingEntity>> {
         return repository.getBookingsByTurf(turfId)
     }
@@ -79,6 +94,10 @@ class OwnerViewModel(private val repository: StrykeRepository) : ViewModel() {
                 repository.updateUser(currentUser.copy(name = name, profileImageUrl = photoUrl))
             }
         }
+    }
+
+    suspend fun getPlayerName(userId: Long): String {
+        return repository.getUserById(userId)?.name ?: "Unknown Player"
     }
 }
 

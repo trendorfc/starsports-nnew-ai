@@ -19,6 +19,11 @@ sealed class Screen(val route: String, val title: String = "", val icon: ImageVe
     object Profile : Screen("profile", "Profile", Icons.Rounded.Person)
     object PastBookings : Screen("past_bookings")
     object PastMatches : Screen("past_matches")
+    object MockPayment : Screen("mock_payment/{turfId}/{sport}/{startTime}/{price}") {
+        fun createRoute(turfId: Long, sport: String, startTime: Long, price: Double) = 
+            "mock_payment/$turfId/$sport/$startTime/$price"
+    }
+    object BookingConfirmation : Screen("booking_confirmation")
     
     // Owner Screens
     object ListTurf : Screen("list_turf", "Add Turf", Icons.Rounded.Add)
@@ -29,6 +34,9 @@ sealed class Screen(val route: String, val title: String = "", val icon: ImageVe
     }
     object ViewBookings : Screen("view_bookings/{turfId}") {
         fun createRoute(turfId: Long) = "view_bookings/$turfId"
+    }
+    object ManageTimings : Screen("manage_timings/{turfId}") {
+        fun createRoute(turfId: Long) = "manage_timings/$turfId"
     }
 }
 

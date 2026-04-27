@@ -1,5 +1,6 @@
 package com.example.strykesportsai.ui.owner
 
+import android.content.Context
 import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -19,10 +20,13 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import coil.compose.AsyncImage
+import java.io.File
+import java.io.FileOutputStream
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -31,6 +35,7 @@ fun OwnerProfileScreen(
     onNavigateBack: () -> Unit
 ) {
     val user by viewModel.user.collectAsState()
+    val context = LocalContext.current
     var showEditNameDialog by remember { mutableStateOf(false) }
     var newName by remember { mutableStateOf("") }
     
@@ -159,7 +164,8 @@ fun OwnerProfileScreen(
             imageUri = selectedImageUri!!,
             onDismiss = { showCropDialog = false },
             onConfirm = { croppedUri ->
-                viewModel.updateProfile(user?.name ?: "", croppedUri.toString())
+                val internalUri = saveProfileImageToInternalStorage(context, croppedUri)
+                viewModel.updateProfile(user?.name ?: "", internalUri?.toString())
                 showCropDialog = false
             }
         )
@@ -303,5 +309,22 @@ fun OwnerProfileOptionItem(
             Spacer(modifier = Modifier.weight(1f))
             Icon(Icons.Rounded.ChevronRight, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant)
         }
+    }
+}
+
+fun saveProfileImageToInternalStorage(context: Context, uri: Uri): Uri? {
+    return try {
+        val inputStream = context.contentResolver.openInputStream(uri)
+        val file = File(context.filesDir, "profile_${System.currentTimeMillis()}.jpg")
+        val outputStream = FileOutputStream(file)
+        inputStream?.use { input ->
+            outputStream.use { output ->
+                input.copyTo(output)
+            }
+        }
+        Uri.fromFile(file)
+    } catch (e: Exception) {
+        e.printStackTrace()
+        null
     }
 }

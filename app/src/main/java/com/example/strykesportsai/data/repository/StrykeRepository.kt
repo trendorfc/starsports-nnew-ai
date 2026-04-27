@@ -18,6 +18,7 @@ class StrykeRepository(
 ) {
     // User
     fun getUser(): Flow<UserEntity?> = userDao.getUser()
+    suspend fun getUserById(id: Long): UserEntity? = userDao.getUserById(id)
     suspend fun saveUser(user: UserEntity): Long = userDao.insertUser(user)
     suspend fun updateUser(user: UserEntity) = userDao.updateUser(user)
     suspend fun clearUser() = userDao.clearUser()
@@ -27,6 +28,7 @@ class StrykeRepository(
     fun getTurfsByOwner(ownerId: Long): Flow<List<TurfEntity>> = turfDao.getTurfsByOwner(ownerId)
     suspend fun getTurfById(id: Long) = turfDao.getTurfById(id)
     suspend fun saveTurf(turf: TurfEntity) = turfDao.insertTurf(turf)
+    suspend fun deleteTurf(turf: TurfEntity) = turfDao.deleteTurf(turf)
 
     // Bookings
     fun getBookingsByUser(userId: Long): Flow<List<BookingEntity>> = bookingDao.getBookingsByUser(userId)

@@ -162,6 +162,38 @@ fun StrykeNavGraph(
                 turfId = turfId,
                 playerViewModel = playerViewModel,
                 turfViewModel = turfViewModel,
+                onNavigateToPayment = { id, sport, start, p ->
+                    navController.navigate(Screen.MockPayment.createRoute(id, sport, start, p))
+                },
+                onNavigateBack = { navController.popBackStack() }
+            )
+        }
+        composable(
+            route = Screen.MockPayment.route,
+            arguments = listOf(
+                navArgument("turfId") { type = NavType.LongType },
+                navArgument("sport") { type = NavType.StringType },
+                navArgument("startTime") { type = NavType.LongType },
+                navArgument("price") { type = NavType.FloatType }
+            )
+        ) { backStackEntry ->
+            val turfId = backStackEntry.arguments?.getLong("turfId") ?: 0L
+            val sport = backStackEntry.arguments?.getString("sport") ?: ""
+            val startTime = backStackEntry.arguments?.getLong("startTime") ?: 0L
+            val price = backStackEntry.arguments?.getFloat("price")?.toDouble() ?: 0.0
+            
+            MockPaymentScreen(
+                turfId = turfId,
+                sport = sport,
+                startTime = startTime,
+                price = price,
+                playerViewModel = playerViewModel,
+                turfViewModel = turfViewModel,
+                onPaymentSuccess = {
+                    navController.navigate(Screen.PastBookings.route) {
+                        popUpTo(Screen.PlayerHome.route)
+                    }
+                },
                 onNavigateBack = { navController.popBackStack() }
             )
         }
@@ -207,7 +239,8 @@ fun StrykeNavGraph(
                 OwnerDashboard(
                     viewModel = ownerViewModel,
                     onNavigateToListTurf = { navController.navigate(Screen.ListTurf.route) },
-                    onNavigateToManageTurf = { navController.navigate(Screen.ManageTurf.route) }
+                    onNavigateToManageTurf = { navController.navigate(Screen.ManageTurf.route) },
+                    onNavigateToProfile = { navController.navigate(Screen.OwnerProfile.route) }
                 )
             }
         }
@@ -225,7 +258,21 @@ fun StrykeNavGraph(
                 ManageTurfScreen(
                     viewModel = ownerViewModel,
                     onEditTurf = { turfId -> navController.navigate(Screen.EditTurf.createRoute(turfId)) },
-                    onViewBookings = { turfId -> navController.navigate(Screen.ViewBookings.createRoute(turfId)) }
+                    onViewBookings = { turfId -> navController.navigate(Screen.ViewBookings.createRoute(turfId)) },
+                    onManageTimings = { turfId -> navController.navigate(Screen.ManageTimings.createRoute(turfId)) }
+                )
+            }
+        }
+        composable(
+            route = Screen.ManageTimings.route,
+            arguments = listOf(navArgument("turfId") { type = NavType.LongType })
+        ) { backStackEntry ->
+            val turfId = backStackEntry.arguments?.getLong("turfId") ?: 0L
+            TurfOwnerHomeScreen(viewModel = ownerViewModel, navController = navController) { padding ->
+                ManageTimingsScreen(
+                    turfId = turfId,
+                    viewModel = ownerViewModel,
+                    onNavigateBack = { navController.popBackStack() }
                 )
             }
         }

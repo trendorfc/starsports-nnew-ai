@@ -358,7 +358,7 @@ fun MatchCard(
                 
                 if (!expanded && !isPast) {
                     Surface(
-                        color = androidx.compose.ui.graphics.Color(0xFF5E4E9A),
+                        color = MaterialTheme.colorScheme.primary,
                         shape = androidx.compose.foundation.shape.CircleShape,
                         modifier = Modifier
                             .padding(16.dp)
@@ -369,7 +369,7 @@ fun MatchCard(
                             modifier = Modifier.padding(horizontal = 14.dp, vertical = 6.dp),
                             style = MaterialTheme.typography.labelSmall,
                             fontWeight = FontWeight.ExtraBold,
-                            color = androidx.compose.ui.graphics.Color.White
+                            color = MaterialTheme.colorScheme.onPrimary
                         )
                     }
                 }
@@ -397,10 +397,7 @@ fun MatchCard(
                         Button(
                             onClick = { expanded = true },
                             shape = MaterialTheme.shapes.medium,
-                            contentPadding = PaddingValues(horizontal = 24.dp, vertical = 12.dp),
-                            colors = ButtonDefaults.buttonColors(
-                                containerColor = androidx.compose.ui.graphics.Color(0xFF5E4E9A)
-                            )
+                            contentPadding = PaddingValues(horizontal = 24.dp, vertical = 12.dp)
                         ) {
                             Text("Details", fontWeight = FontWeight.Bold)
                         }
@@ -414,7 +411,7 @@ fun MatchCard(
                         imageVector = Icons.Rounded.LocationOn,
                         contentDescription = null,
                         modifier = Modifier.size(18.dp),
-                        tint = androidx.compose.ui.graphics.Color(0xFF5E4E9A)
+                        tint = MaterialTheme.colorScheme.primary
                     )
                     Spacer(modifier = Modifier.width(10.dp))
                     Text(

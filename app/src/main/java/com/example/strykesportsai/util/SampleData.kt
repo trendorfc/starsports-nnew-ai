@@ -16,7 +16,7 @@ object SampleData {
                 sportsSupported = "Football, Cricket",
                 pricePerHour = 1200.0,
                 description = "World-class turf with modern amenities and floodlights for night matches.",
-                ownerId = 1,
+                ownerId = 999, // Changed from 1 to 999
                 imageUrls = "https://images.unsplash.com/photo-1574629810360-7efbbe195018"
             ),
             TurfEntity(
@@ -26,7 +26,7 @@ object SampleData {
                 sportsSupported = "Cricket, Tennis",
                 pricePerHour = 1500.0,
                 description = "Premium multi-sport complex offering high-quality turf and expert coaching.",
-                ownerId = 1,
+                ownerId = 998, // Changed from 1 to 998
                 imageUrls = "https://images.unsplash.com/photo-1531415074968-036ba1b575da"
             ),
             TurfEntity(
@@ -36,7 +36,7 @@ object SampleData {
                 sportsSupported = "Football",
                 pricePerHour = 1000.0,
                 description = "High-speed turf designed for intense football matches. Open 24/7.",
-                ownerId = 1,
+                ownerId = 997, // Changed from 1 to 997
                 imageUrls = "https://images.unsplash.com/photo-1546519638-68e109498ffc"
             )
         )

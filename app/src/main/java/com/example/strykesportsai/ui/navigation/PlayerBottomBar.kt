@@ -70,8 +70,8 @@ fun PlayerBottomBar(
         // Circular Green FAB for Create Match
         FloatingActionButton(
             onClick = onNavigateToCreateMatch,
-            containerColor = Color(0xFF4CAF50), // Material Green 500
-            contentColor = Color.White,
+            containerColor = MaterialTheme.colorScheme.primary,
+            contentColor = MaterialTheme.colorScheme.onPrimary,
             shape = CircleShape,
             modifier = Modifier
                 .offset(y = (-28).dp)

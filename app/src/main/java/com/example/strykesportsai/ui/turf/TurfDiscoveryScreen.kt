@@ -148,7 +148,9 @@ fun TurfListItem(
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
     ) {
         Column {
-            val imageUrl = remember(turf.sportsSupported) {
+            val imageUrl = if (turf.imageUrls.isNotBlank()) {
+                turf.imageUrls.split(",").firstOrNull()?.trim()
+            } else {
                 val sports = turf.sportsSupported.split(",").map { it.trim().lowercase() }
                 when {
                     sports.contains("football") && sports.contains("cricket") -> "https://images.unsplash.com/photo-1574629810360-7efbbe195018"
@@ -157,7 +159,7 @@ fun TurfListItem(
                     sports.contains("tennis") -> "https://images.unsplash.com/photo-1595435064212-36aa3664d603"
                     sports.contains("badminton") -> "https://images.unsplash.com/photo-1626225967045-9410dd99eaa6"
                     sports.contains("basketball") -> "https://images.unsplash.com/photo-1546519638-68e109498ffc"
-                    else -> turf.imageUrls.split(",").firstOrNull()?.trim()
+                    else -> null
                 }
             }
 

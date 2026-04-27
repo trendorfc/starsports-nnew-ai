@@ -1,6 +1,9 @@
 package com.example.strykesportsai.ui.owner
 
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.AccountCircle
 import androidx.compose.material.icons.rounded.SwapHoriz
@@ -9,10 +12,13 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
+import coil.compose.AsyncImage
 import com.example.strykesportsai.ui.navigation.Screen
 import com.example.strykesportsai.ui.navigation.ownerBottomNavItems
 
@@ -35,7 +41,12 @@ fun TurfOwnerHomeScreen(
                         label = { Text(screen.title) },
                         selected = currentRoute == screen.route,
                         onClick = {
-                            if (currentRoute != screen.route) {
+                            if (screen.route == Screen.TurfOwnerHome.route) {
+                                navController.navigate(screen.route) {
+                                    popUpTo(0) { inclusive = true }
+                                    launchSingleTop = true
+                                }
+                            } else if (currentRoute != screen.route) {
                                 navController.navigate(screen.route) {
                                     popUpTo(Screen.TurfOwnerHome.route) { saveState = true }
                                     launchSingleTop = true
@@ -57,7 +68,8 @@ fun TurfOwnerHomeScreen(
 fun OwnerDashboard(
     viewModel: OwnerViewModel,
     onNavigateToListTurf: () -> Unit,
-    onNavigateToManageTurf: () -> Unit
+    onNavigateToManageTurf: () -> Unit,
+    onNavigateToProfile: () -> Unit
 ) {
     val user by viewModel.user.collectAsState()
 
@@ -66,34 +78,28 @@ fun OwnerDashboard(
             TopAppBar(
                 title = { Text("Owner Dashboard", fontWeight = FontWeight.Bold) },
                 actions = {
-                    var showProfileMenu by remember { mutableStateOf(false) }
-                    IconButton(onClick = { showProfileMenu = true }) {
-                        Icon(Icons.Rounded.AccountCircle, contentDescription = "Profile")
-                    }
-                    DropdownMenu(
-                        expanded = showProfileMenu,
-                        onDismissRequest = { showProfileMenu = false }
+                    Box(
+                        modifier = Modifier
+                            .padding(end = 8.dp)
+                            .size(40.dp)
+                            .clip(CircleShape)
+                            .clickable { onNavigateToProfile() }
                     ) {
-                        DropdownMenuItem(
-                            text = { Text("Switch to Player Role") },
-                            onClick = {
-                                viewModel.switchRole()
-                                showProfileMenu = false
-                            },
-                            leadingIcon = { Icon(Icons.Rounded.SwapHoriz, contentDescription = null) }
-                        )
-                        DropdownMenuItem(
-                            text = { Text("Logout") },
-                            onClick = {
-                                viewModel.logout()
-                                showProfileMenu = false
-                            },
-                            leadingIcon = { Icon(Icons.Rounded.Logout, contentDescription = null) },
-                            colors = MenuDefaults.itemColors(
-                                textColor = MaterialTheme.colorScheme.error,
-                                leadingIconColor = MaterialTheme.colorScheme.error
+                        if (user?.profileImageUrl != null) {
+                            AsyncImage(
+                                model = user?.profileImageUrl,
+                                contentDescription = "Profile",
+                                modifier = Modifier.fillMaxSize(),
+                                contentScale = ContentScale.Crop
                             )
-                        )
+                        } else {
+                            Icon(
+                                Icons.Rounded.AccountCircle,
+                                contentDescription = "Profile",
+                                modifier = Modifier.fillMaxSize(),
+                                tint = MaterialTheme.colorScheme.primary
+                            )
+                        }
                     }
                 }
             )

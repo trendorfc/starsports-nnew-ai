@@ -17,4 +17,7 @@ interface TurfDao {
 
     @Query("SELECT * FROM turfs WHERE ownerId = :ownerId")
     fun getTurfsByOwner(ownerId: Long): Flow<List<TurfEntity>>
+
+    @Delete
+    suspend fun deleteTurf(turf: TurfEntity)
 }

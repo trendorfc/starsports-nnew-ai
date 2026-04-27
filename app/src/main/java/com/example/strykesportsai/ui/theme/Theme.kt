@@ -36,10 +36,10 @@ private val LightColorScheme = lightColorScheme(
     onSecondary = LightOnSecondary,
     background = LightBackground,
     surface = LightSurface,
-    primaryContainer = Color(0xFFFFDAD4),
-    onPrimaryContainer = Color(0xFF410001),
-    secondaryContainer = Color(0xFFE2E2E6),
-    onSecondaryContainer = StrykeGrey
+    primaryContainer = Color(0xFFE8F5E9),
+    onPrimaryContainer = Color(0xFF1B5E20),
+    secondaryContainer = Color(0xFFF1F8E9),
+    onSecondaryContainer = Color(0xFF33691E)
 )
 
 @Composable
