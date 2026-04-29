@@ -17,5 +17,6 @@ data class UserEntity(
     val dob: String,
     val sportsInterests: String,
     val role: UserRole,
-    val profileImageUrl: String? = null
+    val profileImageUrl: String? = null,
+    val phoneNumber: String = ""
 )

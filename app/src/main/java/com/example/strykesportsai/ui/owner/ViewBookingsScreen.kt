@@ -1,22 +1,25 @@
 package com.example.strykesportsai.ui.owner
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.ArrowBack
+import androidx.compose.material.icons.rounded.Event
+import androidx.compose.material.icons.rounded.Person
+import androidx.compose.material.icons.rounded.Sports
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import coil.compose.AsyncImage
 import com.example.strykesportsai.data.local.entity.BookingEntity
-
-import androidx.compose.material.icons.rounded.Event
-import androidx.compose.material.icons.rounded.Sports
-import androidx.compose.ui.graphics.Color
+import com.example.strykesportsai.data.local.entity.UserEntity
 import java.time.Instant
 import java.time.LocalDateTime
 import java.time.ZoneId
@@ -48,17 +51,30 @@ fun ViewBookingsScreen(
                 Text("No bookings for this turf yet.", color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
         } else {
+            var selectedPlayer by remember { mutableStateOf<UserEntity?>(null) }
+            
+            if (selectedPlayer != null) {
+                PlayerDetailDialog(
+                    player = selectedPlayer!!,
+                    onDismiss = { selectedPlayer = null }
+                )
+            }
+
             LazyColumn(
                 modifier = Modifier.fillMaxSize().padding(padding),
                 contentPadding = PaddingValues(16.dp),
                 verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
                 items(bookings) { booking ->
-                    var playerName by remember { mutableStateOf("Loading...") }
+                    var player by remember { mutableStateOf<UserEntity?>(null) }
                     LaunchedEffect(booking.userId) {
-                        playerName = viewModel.getPlayerName(booking.userId)
+                        player = viewModel.getPlayer(booking.userId)
                     }
-                    BookingListItem(booking, playerName)
+                    BookingListItem(
+                        booking = booking,
+                        playerName = player?.name ?: "Loading...",
+                        onPlayerClick = { player?.let { selectedPlayer = it } }
+                    )
                 }
             }
         }
@@ -66,7 +82,75 @@ fun ViewBookingsScreen(
 }
 
 @Composable
-fun BookingListItem(booking: BookingEntity, playerName: String) {
+fun PlayerDetailDialog(
+    player: UserEntity,
+    onDismiss: () -> Unit
+) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Surface(
+                    modifier = Modifier.size(48.dp),
+                    shape = androidx.compose.foundation.shape.CircleShape,
+                    color = MaterialTheme.colorScheme.primaryContainer
+                ) {
+                    if (player.profileImageUrl != null) {
+                        AsyncImage(
+                            model = player.profileImageUrl,
+                            contentDescription = null,
+                            modifier = Modifier.fillMaxSize()
+                        )
+                    } else {
+                        Icon(
+                            Icons.Rounded.Person,
+                            contentDescription = null,
+                            modifier = Modifier.padding(8.dp)
+                        )
+                    }
+                }
+                Spacer(modifier = Modifier.width(12.dp))
+                Text(text = player.name)
+            }
+        },
+        text = {
+            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                DetailRow(label = "Phone Number", value = "+91 ${player.phoneNumber}")
+                DetailRow(label = "Sports Interests", value = player.sportsInterests)
+                DetailRow(label = "Date of Birth", value = player.dob)
+                DetailRow(label = "Role", value = player.role.name)
+            }
+        },
+        confirmButton = {
+            TextButton(onClick = onDismiss) {
+                Text("Close")
+            }
+        }
+    )
+}
+
+@Composable
+private fun DetailRow(label: String, value: String) {
+    Column {
+        Text(
+            text = label,
+            style = MaterialTheme.typography.labelSmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
+        Text(
+            text = value,
+            style = MaterialTheme.typography.bodyMedium,
+            fontWeight = FontWeight.SemiBold
+        )
+    }
+}
+
+@Composable
+fun BookingListItem(
+    booking: BookingEntity,
+    playerName: String,
+    onPlayerClick: () -> Unit
+) {
     val dateFormatter = DateTimeFormatter.ofPattern("EEE, MMM d")
     val timeFormatter = DateTimeFormatter.ofPattern("h a")
     
@@ -74,7 +158,7 @@ fun BookingListItem(booking: BookingEntity, playerName: String) {
     val endDateTime = LocalDateTime.ofInstant(Instant.ofEpochMilli(booking.endTime), ZoneId.systemDefault())
     
     Card(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier.fillMaxWidth().clickable { onPlayerClick() },
         shape = MaterialTheme.shapes.medium,
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
@@ -156,7 +240,7 @@ fun BookingListItem(booking: BookingEntity, playerName: String) {
                 }
                 
                 Text(
-                    text = "₹${booking.totalPrice.toInt()}",
+                    text = "+ ₹${booking.totalPrice.toInt()}",
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold,
                     color = Color(0xFF6B8A7A)

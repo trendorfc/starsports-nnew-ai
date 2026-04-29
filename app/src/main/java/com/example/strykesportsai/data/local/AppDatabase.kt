@@ -16,7 +16,7 @@ import com.example.strykesportsai.data.local.entity.UserEntity
 
 @Database(
     entities = [UserEntity::class, TurfEntity::class, BookingEntity::class, MatchEntity::class],
-    version = 4,
+    version = 6,
     exportSchema = false
 )
 @TypeConverters(Converters::class)

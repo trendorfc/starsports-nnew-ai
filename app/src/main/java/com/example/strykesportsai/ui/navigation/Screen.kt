@@ -6,12 +6,15 @@ import androidx.compose.material.icons.rounded.*
 import androidx.compose.ui.graphics.vector.ImageVector
 
 sealed class Screen(val route: String, val title: String = "", val icon: ImageVector? = null) {
-    object Onboarding : Screen("onboarding")
+    object Onboarding : Screen("onboarding/{phoneNumber}") {
+        fun createRoute(phoneNumber: String) = "onboarding/$phoneNumber"
+    }
+    object PhoneLogin : Screen("phone_login")
     object PlayerHome : Screen("player_home", "Home", Icons.Rounded.Home)
-    object PlayerDiscovery : Screen("player_discovery", "Players", Icons.Rounded.People)
     object TurfOwnerHome : Screen("turf_owner_home", "Home", Icons.Rounded.Home)
     object MyMatches : Screen("my_matches", "My Matches", Icons.Rounded.Sports)
     object TurfDiscovery : Screen("turf_discovery", "Turfs", Icons.Rounded.SportsFootball)
+    object PlayerDiscovery : Screen("player_discovery", "Players", Icons.Rounded.Search)
     object TurfDetail : Screen("turf_detail/{turfId}") {
         fun createRoute(turfId: Long) = "turf_detail/$turfId"
     }

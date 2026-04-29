@@ -96,6 +96,10 @@ class OwnerViewModel(private val repository: StrykeRepository) : ViewModel() {
         }
     }
 
+    suspend fun getPlayer(userId: Long): UserEntity? {
+        return repository.getUserById(userId)
+    }
+
     suspend fun getPlayerName(userId: Long): String {
         return repository.getUserById(userId)?.name ?: "Unknown Player"
     }

@@ -205,6 +205,11 @@ fun UserInfoSection(user: UserEntity?) {
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )
         Text(
+            text = "Phone: +91 ${user?.phoneNumber ?: "Not set"}",
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
+        Text(
             text = "Interests: ${user?.sportsInterests ?: "None"}",
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant

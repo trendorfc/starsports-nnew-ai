@@ -18,6 +18,7 @@ import com.example.strykesportsai.ui.match.CreateMatchScreen
 import com.example.strykesportsai.ui.onboarding.OnboardingScreen
 import com.example.strykesportsai.ui.onboarding.OnboardingViewModel
 import com.example.strykesportsai.ui.onboarding.OnboardingViewModelFactory
+import com.example.strykesportsai.ui.onboarding.PhoneLoginScreen
 import com.example.strykesportsai.ui.owner.*
 import com.example.strykesportsai.ui.player.*
 import com.example.strykesportsai.ui.turf.*
@@ -43,7 +44,7 @@ fun StrykeNavGraph(
 
     LaunchedEffect(userByPlayer) {
         if (userByPlayer == null) {
-            navController.navigate(Screen.Onboarding.route) {
+            navController.navigate(Screen.PhoneLogin.route) {
                 popUpTo(0) { inclusive = true }
             }
         } else {
@@ -64,7 +65,7 @@ fun StrykeNavGraph(
 
     LaunchedEffect(userByOwner) {
         if (userByOwner == null) {
-            navController.navigate(Screen.Onboarding.route) {
+            navController.navigate(Screen.PhoneLogin.route) {
                 popUpTo(0) { inclusive = true }
             }
         } else {
@@ -87,10 +88,34 @@ fun StrykeNavGraph(
         navController = navController,
         startDestination = startDestination
     ) {
-        composable(Screen.Onboarding.route) {
+        composable(Screen.PhoneLogin.route) {
             val onboardingViewModel: OnboardingViewModel = viewModel(
                 factory = OnboardingViewModelFactory(application.repository)
             )
+            val phoneNumber by onboardingViewModel.phoneNumber.collectAsState()
+
+            PhoneLoginScreen(
+                viewModel = onboardingViewModel,
+                onContinue = {
+                    navController.navigate(Screen.Onboarding.createRoute(phoneNumber))
+                }
+            )
+        }
+
+        composable(
+            route = Screen.Onboarding.route,
+            arguments = listOf(navArgument("phoneNumber") { type = NavType.StringType })
+        ) { backStackEntry ->
+            val phoneNumber = backStackEntry.arguments?.getString("phoneNumber") ?: ""
+            val onboardingViewModel: OnboardingViewModel = viewModel(
+                factory = OnboardingViewModelFactory(application.repository)
+            )
+
+            // Set the phone number in the ViewModel
+            LaunchedEffect(phoneNumber) {
+                onboardingViewModel.onPhoneNumberChange(phoneNumber)
+            }
+
             OnboardingScreen(
                 viewModel = onboardingViewModel,
                 onOnboardingComplete = { role ->
@@ -114,19 +139,7 @@ fun StrykeNavGraph(
                 onNavigateToMyMatches = { navController.navigate(Screen.MyMatches.route) },
                 onNavigateToTurfs = { navController.navigate(Screen.TurfDiscovery.route) },
                 onNavigateToCreateMatch = { navController.navigate(Screen.CreateMatch.route) },
-                onNavigateToProfile = { navController.navigate(Screen.Profile.route) },
-                onNavigateToDiscovery = { navController.navigate(Screen.PlayerDiscovery.route) }
-            )
-        }
-        composable(Screen.PlayerDiscovery.route) {
-            PlayerDiscoveryScreen(
-                viewModel = playerViewModel,
-                onNavigateToHome = { navController.navigate(Screen.PlayerHome.route) },
-                onNavigateToMyMatches = { navController.navigate(Screen.MyMatches.route) },
-                onNavigateToTurfs = { navController.navigate(Screen.TurfDiscovery.route) },
-                onNavigateToCreateMatch = { navController.navigate(Screen.CreateMatch.route) },
-                onNavigateToProfile = { navController.navigate(Screen.Profile.route) },
-                onNavigateBack = { navController.popBackStack() }
+                onNavigateToProfile = { navController.navigate(Screen.Profile.route) }
             )
         }
         composable(Screen.MyMatches.route) {
@@ -150,6 +163,17 @@ fun StrykeNavGraph(
                 onNavigateToDetail = { turfId ->
                     navController.navigate(Screen.TurfDetail.createRoute(turfId))
                 },
+                onNavigateBack = { navController.popBackStack() }
+            )
+        }
+        composable(Screen.PlayerDiscovery.route) {
+            PlayerDiscoveryScreen(
+                viewModel = playerViewModel,
+                onNavigateToHome = { navController.navigate(Screen.PlayerHome.route) },
+                onNavigateToMyMatches = { navController.navigate(Screen.MyMatches.route) },
+                onNavigateToTurfs = { navController.navigate(Screen.TurfDiscovery.route) },
+                onNavigateToCreateMatch = { navController.navigate(Screen.CreateMatch.route) },
+                onNavigateToProfile = { navController.navigate(Screen.Profile.route) },
                 onNavigateBack = { navController.popBackStack() }
             )
         }

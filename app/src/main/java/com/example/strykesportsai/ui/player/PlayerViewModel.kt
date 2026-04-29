@@ -124,9 +124,9 @@ class PlayerViewModel(private val repository: StrykeRepository) : ViewModel() {
 
     // Mock players for discovery (In a real app, this would come from a server or Room)
     private val _players = MutableStateFlow(listOf(
-        UserEntity(id = 101, name = "John Doe", dob = "01/01/1995", sportsInterests = "Football", role = UserRole.PLAYER),
-        UserEntity(id = 102, name = "Jane Smith", dob = "05/05/1998", sportsInterests = "Cricket", role = UserRole.PLAYER),
-        UserEntity(id = 103, name = "Mike Ross", dob = "12/12/1990", sportsInterests = "Tennis", role = UserRole.PLAYER)
+        UserEntity(id = 101, name = "John Doe", dob = "01/01/1995", sportsInterests = "Football", role = UserRole.PLAYER, phoneNumber = "9876543210"),
+        UserEntity(id = 102, name = "Jane Smith", dob = "05/05/1998", sportsInterests = "Cricket", role = UserRole.PLAYER, phoneNumber = "8765432109"),
+        UserEntity(id = 103, name = "Mike Ross", dob = "12/12/1990", sportsInterests = "Tennis", role = UserRole.PLAYER, phoneNumber = "7654321098")
     ))
     val players: StateFlow<List<UserEntity>> = _players.asStateFlow()
 

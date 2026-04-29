@@ -28,7 +28,7 @@ class MainActivity : ComponentActivity() {
                 val user by application.repository.getUser().collectAsState(initial = null)
                 
                 val startDestination = when {
-                    user == null -> Screen.Onboarding.route
+                    user == null -> Screen.PhoneLogin.route
                     user?.role == UserRole.PLAYER -> Screen.PlayerHome.route
                     user?.role == UserRole.TURF_OWNER -> Screen.TurfOwnerHome.route
                     else -> Screen.Onboarding.route

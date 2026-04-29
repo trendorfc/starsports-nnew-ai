@@ -39,8 +39,7 @@ fun PlayerHomeScreen(
     onNavigateToMyMatches: () -> Unit,
     onNavigateToTurfs: () -> Unit,
     onNavigateToCreateMatch: () -> Unit,
-    onNavigateToProfile: () -> Unit,
-    onNavigateToDiscovery: () -> Unit
+    onNavigateToProfile: () -> Unit
 ) {
     val user by viewModel.user.collectAsState()
     val matches by viewModel.upcomingMatches.collectAsState()
@@ -118,20 +117,22 @@ fun PlayerHomeScreen(
                     horizontalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
                     ActionCard(
-                        title = "Find Players",
-                        icon = Icons.Rounded.PersonSearch,
-                        onClick = onNavigateToDiscovery,
-                        modifier = Modifier.weight(1f),
-                        containerColor = MaterialTheme.colorScheme.primaryContainer
-                    )
-                    ActionCard(
                         title = "Book Turf",
                         icon = Icons.Rounded.Stadium,
                         onClick = onNavigateToTurfs,
-                        modifier = Modifier.weight(1f),
+                        modifier = Modifier.fillMaxWidth(),
                         containerColor = MaterialTheme.colorScheme.secondaryContainer
                     )
                 }
+            }
+
+            // Upcoming Matches Section
+            item {
+                Text(
+                    text = "Upcoming Matches",
+                    style = MaterialTheme.typography.headlineSmall,
+                    fontWeight = FontWeight.ExtraBold
+                )
             }
 
             // Sports Filter
@@ -139,8 +140,9 @@ fun PlayerHomeScreen(
                 Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                     Text(
                         text = "Popular Sports",
-                        style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.Bold
+                        style = MaterialTheme.typography.titleSmall,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                     LazyRow(
                         horizontalArrangement = Arrangement.spacedBy(8.dp),
@@ -160,15 +162,6 @@ fun PlayerHomeScreen(
                         }
                     }
                 }
-            }
-
-            // Upcoming Matches Section
-            item {
-                Text(
-                    text = "Upcoming Matches",
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.Bold
-                )
             }
 
             items(matches) { match ->
@@ -667,45 +660,46 @@ fun PlayerHomeScreenPreview() {
                         horizontalArrangement = Arrangement.spacedBy(16.dp)
                     ) {
                         ActionCard(
-                            title = "Find Players",
-                            icon = Icons.Rounded.PersonSearch,
-                            onClick = {},
-                            modifier = Modifier.weight(1f),
-                            containerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.7f)
-                        )
-                        ActionCard(
                             title = "Book Turf",
                             icon = Icons.Rounded.Stadium,
                             onClick = {},
-                            modifier = Modifier.weight(1f),
+                            modifier = Modifier.fillMaxWidth(),
                             containerColor = MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.7f)
                         )
                     }
                 }
 
-                // Sports Filter
-                item {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(8.dp)
-                    ) {
-                        listOf("All", "Football", "Cricket").forEach { sport ->
-                            FilterChip(
-                                selected = sport == "All",
-                                onClick = {},
-                                label = { Text(sport) }
-                            )
-                        }
-                    }
-                }
-
-                // Section Title
+                // Upcoming Matches Section
                 item {
                     Text(
                         text = "Upcoming Matches",
-                        style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.Bold
+                        style = MaterialTheme.typography.headlineSmall,
+                        fontWeight = FontWeight.ExtraBold
                     )
+                }
+
+                // Sports Filter
+                item {
+                    Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                        Text(
+                            text = "Popular Sports",
+                            style = MaterialTheme.typography.titleSmall,
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            listOf("All", "Football", "Cricket").forEach { sport ->
+                                FilterChip(
+                                    selected = sport == "All",
+                                    onClick = {},
+                                    label = { Text(sport) }
+                                )
+                            }
+                        }
+                    }
                 }
 
                 items(dummyMatches) { match ->

@@ -25,6 +25,9 @@ class OnboardingViewModel(private val repository: StrykeRepository) : ViewModel(
     private val _sportsInterests = MutableStateFlow("")
     val sportsInterests: StateFlow<String> = _sportsInterests.asStateFlow()
 
+    private val _phoneNumber = MutableStateFlow("")
+    val phoneNumber: StateFlow<String> = _phoneNumber.asStateFlow()
+
     private val _selectedRole = MutableStateFlow(UserRole.UNDEFINED)
     val selectedRole: StateFlow<UserRole> = _selectedRole.asStateFlow()
 
@@ -35,6 +38,13 @@ class OnboardingViewModel(private val repository: StrykeRepository) : ViewModel(
     fun onLastNameChange(newName: String) { _lastName.value = newName }
     fun onDobChange(newDob: String) { _dob.value = newDob }
     fun onSportsInterestsChange(newInterests: String) { _sportsInterests.value = newInterests }
+    fun onPhoneNumberChange(newPhone: String) {
+        // Remove any non-digit characters if they were pasted
+        val digitsOnly = newPhone.filter { it.isDigit() }
+        if (digitsOnly.length <= 10) {
+            _phoneNumber.value = digitsOnly
+        }
+    }
     
     fun toggleSportInterest(sport: String) {
         val current = _sportsInterests.value.split(", ").filter { it.isNotBlank() }.toMutableList()
@@ -50,11 +60,14 @@ class OnboardingViewModel(private val repository: StrykeRepository) : ViewModel(
 
     fun completeOnboarding() {
         viewModelScope.launch {
+            val existingUser = repository.getUserById(1) // Assuming single user for now or checking if one exists
             val user = UserEntity(
+                id = existingUser?.id ?: 0,
                 name = "${_firstName.value} ${_lastName.value}".trim(),
                 dob = _dob.value,
                 sportsInterests = _sportsInterests.value,
-                role = _selectedRole.value
+                role = _selectedRole.value,
+                phoneNumber = _phoneNumber.value
             )
             repository.saveUser(user)
             _onboardingCompleted.value = true

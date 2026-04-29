@@ -65,6 +65,30 @@ object SampleData {
                 playersNeeded = 2,
                 currentPlayers = 20,
                 description = "Casual cricket"
+            ),
+            com.example.strykesportsai.data.local.entity.MatchEntity(
+                id = 3,
+                creatorId = 997,
+                turfId = 3,
+                location = "Pari Chowk, Greater Noida",
+                sport = "Badminton",
+                startTime = System.currentTimeMillis() + 259200000,
+                endTime = System.currentTimeMillis() + 262800000,
+                playersNeeded = 2,
+                currentPlayers = 2,
+                description = "Badminton doubles"
+            ),
+            com.example.strykesportsai.data.local.entity.MatchEntity(
+                id = 4,
+                creatorId = 996,
+                turfId = null,
+                location = "Sports Complex, Noida",
+                sport = "Basketball",
+                startTime = System.currentTimeMillis() + 345600000,
+                endTime = System.currentTimeMillis() + 352800000,
+                playersNeeded = 6,
+                currentPlayers = 4,
+                description = "Street basketball 3v3"
             )
         )
 
